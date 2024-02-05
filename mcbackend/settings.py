@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-zsptztc!=m@xr=o+4gp6buik9kz=959^@cehhz358kahw3n1!t'
+# SECRET_KEY = 'django-insecure-zsptztc!=m@xr=o+4gp6buik9kz=959^@cehhz358kahw3n1!t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'api',
 ]
 
 MIDDLEWARE = [
@@ -73,10 +75,20 @@ WSGI_APPLICATION = 'mcbackend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+import environ
+
+env = environ.Env()
+environ.Env.read_env()  # read .env file
+SECRET_KEY = env('DJANGO_SECRET_KEY')
+# Uses local .env (not shared on GitHub) for development passwords
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('POSTGRES_DB'),
+        'USER': env('POSTGRES_USER'),
+        'PASSWORD': env('POSTGRES_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT'),
     }
 }
 
@@ -121,3 +133,30 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+AUTH_USER_MODEL = 'api.GenericUser'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+from datetime import timedelta
+
+# JSON Web Token Authentication
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': True, # When set to True, ensures that a new refresh token is issued with each request to refresh an access token
+    'BLACKLIST_AFTER_ROTATION': True, # If True, this setting ensures that once a refresh token is used to obtain a new access token, it is added to a blacklist and cannot be used again
+    'UPDATE_LAST_LOGIN': True, # When set to True, Django's user last login time (last_login field) is updated every time a refresh token is used to acquire a new access token
+
+    'ALGORITHM': 'HS256', # This specifies the cryptographic signing algorithm used to sign JWT tokens. HS256 (HMAC with SHA-256) is a commonly used, secure algorithm that uses a symmetric key
+    'SIGNING_KEY': SECRET_KEY, # This is the secret key used to sign the JWT tokens
+    'VERIFYING_KEY': None, #  In the case of asymmetric algorithms (not HS256), this would be the public key used to verify the token signature
+    'AUDIENCE': None,
+    'ISSUER': None,
+    'JWK_URL': None,
+    'LEEWAY': 0,
+}
