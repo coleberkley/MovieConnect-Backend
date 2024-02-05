@@ -1,10 +1,12 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import GenericUserSerializer
+from .serializers import GenericUserSerializer, UserNameSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.views import TokenRefreshView
 from django.http import JsonResponse
+from django.contrib.auth import get_user_model
+from rest_framework import generics, permissions
 
 
 # Create a Generic User
@@ -18,6 +20,15 @@ class CreateGenericUserView(APIView):
             if user:
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+# Renders the current User
+class GenericUserProfileView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        # Directly return the username in the response
+        user_data = {'username': request.user.username}
+        return Response(user_data)
 
 
 # Custom Obtain/Refresh token responses to tell React frontend to store token in HttpOnly cookies

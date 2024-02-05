@@ -38,12 +38,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt',
     'api',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'api.middleware.JWTAuthenticationMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -146,6 +150,7 @@ from datetime import timedelta
 
 # JSON Web Token Authentication
 SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ["Bearer"],
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True, # When set to True, ensures that a new refresh token is issued with each request to refresh an access token
@@ -160,3 +165,14 @@ SIMPLE_JWT = {
     'JWK_URL': None,
     'LEEWAY': 0,
 }
+
+# Tells django-cors-headers to send the proper Access-Control-Allow-Origin header matching our React app's origin
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Allows React app to include credentials with requests to Django backend
+CORS_ALLOW_CREDENTIALS = True
+
+# For testing with local react app
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',  # Adjust this to the origin of your React app
+]
