@@ -13,7 +13,8 @@ This README outlines the structure and operational details of our Django-based A
 
 ### Web Server
 - Gunicorn: Employed as the Web Server Gateway Interface (WSGI) to serve the Django application, enhancing performance over Django's built-in server.
-Database
+
+### Database
 - Postgres: Utilizes port 5432 and runs in a dedicated Docker container. Data persistence is managed via Docker Volumes.
 - Development Database Access: Use `psql -h db -d mcdatabase_dev -U mcuser` to interact with the development database.
     - Common PSQL Commands:
