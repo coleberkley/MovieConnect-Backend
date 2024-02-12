@@ -1,19 +1,29 @@
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .serializers import GenericUserSerializer, UserNameSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
-from django.contrib.auth import get_user_model
-from rest_framework import generics, permissions
+from django.conf import settings
+from .serializers import GenericUserSerializer
+from rest_framework.permissions import IsAuthenticated
 
+# Utility function to set the HttpOnly cookie
+def set_access_token_cookie(response, access_token):
+    max_age = settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds()
+    response.set_cookie(
+        'access_token',
+        access_token,
+        max_age=max_age,
+        httponly=True,
+        samesite='Lax',  # Or 'Strict' for more constrained environments
+        secure=False  # Remember to set to True in production
+    )
 
 # Create a Generic User
 class CreateGenericUserView(APIView):
 
     def post(self, request, format='json'):
-
         serializer = GenericUserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -23,47 +33,33 @@ class CreateGenericUserView(APIView):
 
 # Renders the current User
 class GenericUserProfileView(generics.RetrieveAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Directly return the username in the response
         user_data = {'username': request.user.username}
         return Response(user_data)
 
-
-# Custom Obtain/Refresh token responses to tell React frontend to store token in HttpOnly cookies
-class CookieTokenObtainPairView(TokenObtainPairView):
+# Base class for setting cookies in token views
+class TokenViewBaseMixin:
     def finalize_response(self, request, response, *args, **kwargs):
-        # Check if we have an access token in the response data
         if 'access' in response.data:
-            # Set the access token in an HttpOnly cookie
-            response.set_cookie(
-                'access_token',
-                response.data['access'],
-                max_age=3600,  # Expires in 1 hour, adjust based on ACCESS_TOKEN_LIFETIME
-                httponly=True,
-                samesite='Lax',  # 'Strict' for strictest setting, 'None' if your frontend is on a different domain and you're using HTTPS
-                secure=False  # Remember to set to True in production for HTTPS
-            )
-            # Optionally remove the access token from the response body to not expose it directly to the client
+            set_access_token_cookie(response, response.data['access'])
             del response.data['access']
-
         return super().finalize_response(request, response, *args, **kwargs)
 
-class CookieTokenRefreshView(TokenRefreshView):
-    def finalize_response(self, request, response, *args, **kwargs):
-        # Check if we have an access token in the response data
-        if 'access' in response.data:
-            # Set the new access token in an HttpOnly cookie
-            response.set_cookie(
-                'access_token',
-                response.data['access'],
-                max_age=3600,  # Adjust based on your ACCESS_TOKEN_LIFETIME
-                httponly=True,
-                samesite='Lax',  # Or 'None' for cross-origin requests with HTTPS
-                secure=False  # Set to True in production with HTTPS
-            )
-            # Optionally remove the access token from the response body
-            del response.data['access']
+# Custom Obtain token response to tell React frontend to store token in HttpOnly cookies
+class CookieTokenObtainPairView(TokenViewBaseMixin, TokenObtainPairView):
+    pass
 
-        return super().finalize_response(request, response, *args, **kwargs)
+# Custom Refresh token response
+class CookieTokenRefreshView(TokenViewBaseMixin, TokenRefreshView):
+    pass
+
+# Logout view
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        response = JsonResponse({"detail": "Successfully logged out."})
+        response.delete_cookie('access_token')
+        return response

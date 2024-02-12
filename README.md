@@ -1,67 +1,91 @@
 # MovieConnect Backend
 
-## Developer Notes
+## Overview
+This README outlines the structure and operational details of our Django-based API and its related services, including Django Rest Framework, Postgres, Nginx, and Docker.
 
-### Django
-Python Django is our chosen backend framework. 
+## Services and Configuration
 
-### Django Rest Framework
-Django Rest Framework is our API framework. It works inside our broader Django backend framework.
-This API will listen on port 8000 and run inside a docker container in development and production.
-We will use Green Unicorn (Gunicorn) instead of Django's basic Web Server Gateway Interface to run our API on port 8000.
+### Backend Framework
+- Django: Chosen for its robustness and flexibility in building backend applications.
 
-### Postgres
-The Postgres server will listen on port 5432 and run inside its own docker container.
-Database data will be stored in a Docker Volume. This is a type of in-house database maintenance, using Docker.
-To shell into PSQL (Postgres interactive shell) to see models in development database run
-'psql -h db -d mcdatabase_dev -U mcuser' from the Postgres server's docker container's shell
-Other shell commands:
-'\dt' show database tables
-'\l' list databases
-'\c' change database
-'\q' quit psql
-'select * from <model in db>' select all instances of a model
+### API Framework
+- Django Rest Framework: Integrated with Django to provide a powerful toolkit for building Web APIs. The API operates on port 8000 and is containerized for both        development and production environments.
 
-### Nginx
-Nginx is the reverse proxy server that will handle all incoming requests from the external world and route the requests into our backend services.
-Our Nginx server will support SSL certificates for HTTPS (in production), and we will generate free SSL certs using Let's Encrypt's certbot.
-The Nginx server will run in a docker container on port 8080 and proxy requests to either port 8000 (Django) or a static folder location for static files.
+### Web Server
+- Gunicorn: Employed as the Web Server Gateway Interface (WSGI) to serve the Django application, enhancing performance over Django's built-in server.
+Database
+- Postgres: Utilizes port 5432 and runs in a dedicated Docker container. Data persistence is managed via Docker Volumes.
+- Development Database Access: Use `psql -h db -d mcdatabase_dev -U mcuser` to interact with the development database.
+    - Common PSQL Commands:
+    - `\dt`: Display database tables.
+    - `\l`: List all databases.
+    - `\c`: Switch databases.
+    - `\q`: Quit the PSQL shell.
+    - `select * from <model>`: Fetch all instances of a model.
 
-### Docker
-Docker containers are isolated runtime environments for software to run inside of.
-We will have a Docker container for each of the following: API server, Postgres server, Nginx proxy server, TorchServe Model API
-We will use Docker Compose to automatically orchestrate the build and purpose of each container. See the docker-compose.yml file.
+### Reverse Proxy Server
+- Nginx: Handles incoming requests and routes them to the appropriate backend service. Supports SSL for HTTPS in production with certificates from Let's Encrypt. Nginx listens on port 8080 and proxies requests to Django or serves static files as needed.
 
-To run Docker containers in detatched mode (and build if never built before) run 'docker-compose up -d'
-To rebuild containers run 'docker-compose build' or 'docker-compose up -d --build'
-To stop containers run 'docker-compose stop'
-To stop and remove containers run 'docker-compose down'
-To remove containers and volumes run 'docker-compose down -v'
-To see all running containers run 'docker ps'
-To shell into a specific container run 'docker exec -it <container_name_or_id> /bin/bash'
-To exit shell run 'exit'
+### Containerization
+- Docker: Provides isolated environments for each service (API server, Postgres, Nginx, etc.). Docker Compose orchestrates the container setup and management.
+    - Docker Commands:
+        - `docker-compose up -d`: Start containers in detached mode.
+        - `docker-compose build`, `docker-compose up -d --build`: Rebuild containers.
+        - `docker-compose stop`: Stop running containers.
+        - `docker-compose down`: Remove containers.
+        - `docker-compose down -v`: Remove containers and volumes.
+        - `docker ps`: List active containers.
+        - `docker exec -it <container_name_or_id> /bin/bash`: Access container shell.
+        - `exit`: Leave container shell.
 
-## Using the API
+## API Usage
 
 ### User Authentication
+The API leverages simplejwt for secure, token-based user authentication. Tokens are not persisted in the database, ensuring a high level of security and performance.
 
-This API uses with simplejwt JSON Web Tokens for authenticating requests.
-These tokens are production-level, as they are not stored in our database, have customizable expiration times, and are completely unique per creation. 
-The frontend will basically request for a new token when logging in a user and will store this token in the frontend for usage. 
-The token will be stored in the browser cookies and will automatically be included in the authorization header per http request. 
-If a token expires, the frontend will request to refresh it. 
+### Workflow
+1. User Creation: The React frontend sends POST requests to `/api/user/signup/` for new user registrations, redirecting to the login page upon success.
+2. User Login: To sign in, POST requests are sent to `/api/token/`, automatically storing the obtained token in HttpOnly cookies via the backend.
+3. Token Refresh: Tokens have a configurable lifespan and must be refreshed via `/api/token/refresh/` when expired. The process mirrors initial token acquisition.
 
-#### User Creation
-Our React frontend will send POST requests to .../api/user/signup/ when creating a user for the first time and will then be sent to a login page.
-User creation will not directly work with obtaining or refreshing tokens. 
+## API Endpoints for Frontend Integration
+This section offers a detailed guide for frontend React developers on interacting with our Django backend API endpoints. It's crucial to note that authentication tokens (JWT) are managed via HttpOnly cookies to enhance security. This means the tokens are stored securely by the browser and cannot be accessed directly by JavaScript, offering protection against XSS attacks.
 
-#### Signing in a User
-React will send POST requests to .../api/token/ to obtain a new token. This token will be automatically stored in the browser's HttpOnly cookies, as
-this is an HTTP field included in the response which is configured from the backend. The frontend shouldn't have to directly work with storing or accessing the tokens at all. 
-Once a proper POST request is sent to /api/token/, every request from that browser session onwards should automatically be verified.
+### User Management
 
-### Refreshing tokens
-Depending on our chosen refresh timer, eventually tokens will expire if a User is still signed into a browser with such token for over the expiration limit.
-A token becomes invalid once expired, so the frontend should send a proper refresh request to /api/token/refresh/ to refresh its token. 
-The token should automatically refresh and return in HttpOnly cookies just like when obtaining a new token. 
+#### Register New User
+- Endpoint: `/api/user/signup/`
+- Method: POST
+- Purpose: Registers a new user in the system. The request should include necessary user details, such as username and password.
+- Response: Returns the newly created user's details on success with a 201 Created status. On failure (e.g., missing required fields or duplicate username), it returns error details with a 400 Bad Request status.
 
+#### User Profile
+- Endpoint: `/api/user/profile/`
+- Method: GET
+- Purpose: Fetches profile information for the currently authenticated user. Authentication is verified through the JWT stored in the HttpOnly cookie.
+- Response: Provides user profile details, primarily the username. If authentication fails, it returns a 401 Unauthorized status.
+
+### Authentication and Token Management
+
+#### Obtain Token (Login)
+- Endpoint: `/api/token/`
+- Method: POST
+- Purpose: Authenticates a user based on provided credentials (username and password) and sets JWT access tokens in HttpOnly cookies.
+- Response: Upon successful authentication, sets an HttpOnly cookie with the JWT access token and returns a refresh token in the response body. On authentication failure, returns a 401 Unauthorized status.
+
+#### Refresh Token
+- Endpoint: `/api/token/refresh/`
+- Method: POST
+- Purpose: Refreshes the JWT access token using the refresh token, automatically managing this through the HttpOnly cookie without direct frontend intervention.
+- Response: Updates the access token in the HttpOnly cookie. If the refresh process fails (e.g., refresh token is expired), returns a 401 Unauthorized status.
+
+#### Logout
+- Endpoint: `/api/user/logout/`
+- Method: POST
+- Purpose: Logs out the current user by clearing the HttpOnly cookie containing the JWT access token. This endpoint requires the user to be authenticated but does not need any request body.
+- Response: Returns a success message indicating the user has been logged out, and the access token cookie is cleared.
+
+### Guidelines for Frontend Developers
+- HttpOnly Cookie Management: Since JWTs are stored in HttpOnly cookies, the frontend does not directly handle token storage or transmission. The browser automatically includes these tokens in requests to the backend.
+- Handling Authentication: For endpoints requiring authentication, ensure your API calls are made with the proper credentials and cookies enabled. If an API call returns a 401 Unauthorized status, initiate a token refresh or redirect the user to the login page as appropriate.
+- Secure Communication: Always use HTTPS for production deployments to prevent the interception of requests and to ensure the security of data in transit.
