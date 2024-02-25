@@ -1,16 +1,28 @@
 from django.core.management.base import BaseCommand
 import requests
 import json
+import os
+
+# Some routes for testing:
+
+# Get the top rated movies:
+# https://api.themoviedb.org/3/movie/top_rated?api_key={api_key}&page=3
+
+# Get a movie's details by ID:
+# https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}
+
+# Get a movie credit details by ID:
+# https://api.themoviedb.org/3/movie/{movie_id}/credits?api_key={api_key}
+
+# Append '&page={number}' at the end to set page number
+
 
 class Command(BaseCommand):
-    help = 'Fetches and prints the JSON response from a TMDB API request'
-
-    def add_arguments(self, parser):
-        parser.add_argument('--api_key', type=str, help='Your TMDB API key')
 
     def handle(self, *args, **options):
-        api_key = options['api_key'] if options['api_key'] else '7566a1c11bd5a58fb141c304d73d3c70'
-        url = f'https://api.themoviedb.org/3/movie/69?api_key={api_key}'
+        movie_id = 69
+        api_key = os.getenv('TMDB_KEY')
+        url = f'https://api.themoviedb.org/3/movie/top_rated?api_key={api_key}'
 
         response = requests.get(url)
         if response.status_code == 200:
