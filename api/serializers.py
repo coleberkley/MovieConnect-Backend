@@ -26,7 +26,7 @@ class UserNameSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'age', 'is_private', 'bio']
+        fields = ['username', 'email', 'birth_date', 'is_private', 'bio']
 
 
 # Optional to add 'validators': [validate_password] to 'password' params in extra_kwargs 

@@ -57,16 +57,16 @@ This section offers a detailed guide for frontend React developers on interactin
 #### Register New User
 - Endpoint: `/api/user/signup/`
 - Method: POST
-- Expects: unique username, unique email, password, age (YYYY-MM-DD)
+- Expects: unique username, unique email, password, age (Formatted as YYYY-MM-DD)
 - Purpose: Registers a new user in the system. The request should include necessary user details, such as username and password.
-- Response: Returns the newly created user's details on success with a 201 Created status. On failure (e.g., missing required fields or duplicate username), it returns error details with a 400 Bad Request status.
+- Response: Returns a successful 201 status and sets JWT token in response cookies 
 
 #### User Profile
-- Endpoint: `/api/user/profile/`
+- Endpoint: `/api/user/userprofile/`
 - Method: GET
 - Expects: userCredentials
-- Purpose: Just for testing authentication
-- Response: Returns the authenticated user's username
+- Purpose: Retrieves relative user information 
+- Response: Returns the authenticated user's fields: 'username', 'email', 'birth_date' (Format is YYYY-MM-DD), 'is_private' (Boolean Value), 'bio'
 
 ### Authentication and Token Management
 
@@ -74,14 +74,14 @@ This section offers a detailed guide for frontend React developers on interactin
 - Endpoint: `/api/token/`
 - Method: POST
 - Expects: username and password
-- Purpose: Authenticates a user based on provided credentials (username and password) and sets JWT access tokens in HttpOnly cookies.
-- Response: Upon successful authentication, sets an HttpOnly cookie with the JWT access token and returns a refresh token in the response body. On authentication failure, returns a 401 Unauthorized status.
+- Purpose: Authenticates a user based on provided credentials
+- Response: Returns a successful 201 status and sets JWT token in response cookies
 
 #### Refresh Token
 - Endpoint: `/api/token/refresh/`
 - Method: POST
 - Expects: Refresh token 
-- Purpose: Refreshes the JWT access token using the refresh token, automatically managing this through the HttpOnly cookie without direct frontend intervention.
+- Purpose: Refreshes the JWT access token using the refresh token. We probably won't even use this route for simplicities sake
 - Response: Updates the access token in the HttpOnly cookie. If the refresh process fails (e.g., refresh token is expired), returns a 401 Unauthorized status.
 
 #### Logout
@@ -90,6 +90,20 @@ This section offers a detailed guide for frontend React developers on interactin
 - Expects: userCredentials
 - Purpose: Logs out the current user by clearing the HttpOnly cookie containing the JWT access token. This endpoint requires the user to be authenticated but does not need any request body.
 - Response: Returns a success message indicating the user has been logged out, and the access token cookie is cleared.
+
+#### User Movie Lists
+- Endpoint: `/api/user/movies/`
+- Method: GET
+- Expects: userCredentials
+- Purpose: Fetches the relative movie lists for that user to be displayed on the home page. 
+- Response: Returns fields 'title', 'poster_path', 'overview', 'release_date' (YYYY-MM-DD), 'runtime', 'adult' (Boolean)
+
+#### Movie Details
+- Endpoint: `/api/movie/<movie_id>/`
+- Method: GET
+- Expects: userCredentials
+- Purpose: Retrieves the details of a specific movie to be displayed on a specific movie's movie page
+- Response: This route hasn't been implemented yet so the response details haven't been decided 
 
 ### Guidelines for Frontend Developers
 - HttpOnly Cookie Management: Since JWTs are stored in HttpOnly cookies, the frontend does not directly handle token storage or transmission. The browser automatically includes these tokens in requests to the backend.
