@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
+from .models import Movie
 
 # Gets current User model declared in settings.py
 User = get_user_model()
@@ -22,6 +23,12 @@ class UserNameSerializer(serializers.ModelSerializer):
         fields = ['username']
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'age', 'is_private', 'bio']
+
+
 # Optional to add 'validators': [validate_password] to 'password' params in extra_kwargs 
 class UserSignUpSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,3 +48,8 @@ class UserSignUpSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+
+class DisplayMovieSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Movie
+        fields = ['title', 'poster_path', 'overview', 'release_date', 'runtime', 'adult']

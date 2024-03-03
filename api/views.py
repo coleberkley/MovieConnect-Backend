@@ -5,8 +5,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from django.conf import settings
-from .serializers import UserSignUpSerializer
+from .serializers import UserSignUpSerializer, UserProfileSerializer, DisplayMovieSerializer
 from rest_framework.permissions import IsAuthenticated
+from .models import Movie
 
 # Utility function to set the HttpOnly cookie
 def set_access_token_cookie(response, access_token):
@@ -40,13 +41,25 @@ class CreateGenericUserView(APIView):
         # error_detail.update(errors=serializer.errors)
         return Response(error_detail, status=status.HTTP_400_BAD_REQUEST)
 
-# Only used for testing
-class GenericUserProfileView(generics.RetrieveAPIView):
+# Retrieve User Data
+class RetrieveUserProfile(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        user_data = {'username': request.user.username}
-        return Response(user_data)
+    def get(self, request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)  
+
+# Sends over a list of 10 movies from the database for now
+class RetrieveMovies(APIView):
+    permission_classes = [IsAuthenticated]  # Adjust permissions as needed
+
+    def get(self, request):
+        # Fetch the first 10 movies from the database
+        movies = Movie.objects.all()[:10]
+        # Serialize the movie data
+        serializer = DisplayMovieSerializer(movies, many=True)
+        return Response(serializer.data)
+
 
 # Base class for setting cookies in token views
 class TokenViewBaseMixin:
