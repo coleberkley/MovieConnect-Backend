@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from django.conf import settings
-from .serializers import GenericUserSerializer
+from .serializers import UserSignUpSerializer
 from rest_framework.permissions import IsAuthenticated
 
 # Utility function to set the HttpOnly cookie
@@ -24,14 +24,23 @@ def set_access_token_cookie(response, access_token):
 class CreateGenericUserView(APIView):
 
     def post(self, request, format='json'):
-        serializer = GenericUserSerializer(data=request.data)
+        serializer = UserSignUpSerializer(data=request.data)
+
         if serializer.is_valid():
             user = serializer.save()
-            if user:
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            refresh = RefreshToken.for_user(user)  # Create a new token
+            response = Response({
+                "refresh": str(refresh), # Probably won't need to use this unless we want token expiration
+                "detail": "User created and signed in successfully."
+            }, status=status.HTTP_201_CREATED)
+            set_access_token_cookie(response, str(refresh.access_token))
+            return response
+        
+        error_detail = {'detail': 'Invalid data received.'}
+        # error_detail.update(errors=serializer.errors)
+        return Response(error_detail, status=status.HTTP_400_BAD_REQUEST)
 
-# Renders the current User
+# Only used for testing
 class GenericUserProfileView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 

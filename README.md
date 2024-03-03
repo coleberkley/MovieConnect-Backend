@@ -57,32 +57,37 @@ This section offers a detailed guide for frontend React developers on interactin
 #### Register New User
 - Endpoint: `/api/user/signup/`
 - Method: POST
+- Expects: unique username, unique email, password, age (YYYY-MM-DD)
 - Purpose: Registers a new user in the system. The request should include necessary user details, such as username and password.
 - Response: Returns the newly created user's details on success with a 201 Created status. On failure (e.g., missing required fields or duplicate username), it returns error details with a 400 Bad Request status.
 
 #### User Profile
 - Endpoint: `/api/user/profile/`
 - Method: GET
-- Purpose: Fetches profile information for the currently authenticated user. Authentication is verified through the JWT stored in the HttpOnly cookie.
-- Response: Provides user profile details, primarily the username. If authentication fails, it returns a 401 Unauthorized status.
+- Expects: userCredentials
+- Purpose: Just for testing authentication
+- Response: Returns the authenticated user's username
 
 ### Authentication and Token Management
 
 #### Obtain Token (Login)
 - Endpoint: `/api/token/`
 - Method: POST
+- Expects: username and password
 - Purpose: Authenticates a user based on provided credentials (username and password) and sets JWT access tokens in HttpOnly cookies.
 - Response: Upon successful authentication, sets an HttpOnly cookie with the JWT access token and returns a refresh token in the response body. On authentication failure, returns a 401 Unauthorized status.
 
 #### Refresh Token
 - Endpoint: `/api/token/refresh/`
 - Method: POST
+- Expects: Refresh token 
 - Purpose: Refreshes the JWT access token using the refresh token, automatically managing this through the HttpOnly cookie without direct frontend intervention.
 - Response: Updates the access token in the HttpOnly cookie. If the refresh process fails (e.g., refresh token is expired), returns a 401 Unauthorized status.
 
 #### Logout
 - Endpoint: `/api/user/logout/`
 - Method: POST
+- Expects: userCredentials
 - Purpose: Logs out the current user by clearing the HttpOnly cookie containing the JWT access token. This endpoint requires the user to be authenticated but does not need any request body.
 - Response: Returns a success message indicating the user has been logged out, and the access token cookie is cleared.
 

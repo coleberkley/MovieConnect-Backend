@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECRET_KEY = 'django-insecure-zsptztc!=m@xr=o+4gp6buik9kz=959^@cehhz358kahw3n1!t'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', '*']
 
@@ -156,7 +156,7 @@ REST_FRAMEWORK = {
 # JSON Web Token Authentication
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ["Bearer"],
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True, # When set to True, ensures that a new refresh token is issued with each request to refresh an access token
     'BLACKLIST_AFTER_ROTATION': True, # If True, this setting ensures that once a refresh token is used to obtain a new access token, it is added to a blacklist and cannot be used again
