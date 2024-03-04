@@ -52,4 +52,4 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 class DisplayMovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
-        fields = ['title', 'poster_path', 'overview', 'release_date', 'runtime', 'adult']
+        fields = ['title', 'poster_path', 'overview', 'release_date', 'runtime', 'adult', 'tmdb_id']
