@@ -11,7 +11,7 @@ class Command(BaseCommand):
         tmdb_api_key = os.getenv('TMDB_KEY')
         popular_movies_url = f'https://api.themoviedb.org/3/movie/popular?api_key={tmdb_api_key}&language=en-US&page='
 
-        for page in range(1, 2):  # Fetch 1 page of popular movies
+        for page in range(12, 16):  # Fetch 1 page of popular movies, last page fetched from TMDb was 15
             response = requests.get(popular_movies_url + str(page)).json()
             for movie_data in response['results']:
                 # Fetch additional movie details

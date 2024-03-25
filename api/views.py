@@ -7,7 +7,11 @@ from django.http import JsonResponse
 from django.conf import settings
 from .serializers import UserSignUpSerializer, UserProfileSerializer, DisplayMovieSerializer
 from rest_framework.permissions import IsAuthenticated
-from .models import Movie
+from .models import Movie, Rating
+from django.contrib.auth import get_user_model
+from .recommender import recommend_movies
+
+User = get_user_model()
 
 # Utility function to set the HttpOnly cookie
 def set_access_token_cookie(response, access_token):
@@ -47,16 +51,17 @@ class RetrieveUserProfile(generics.RetrieveAPIView):
 
     def get(self, request):
         serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data)  
+        return Response(serializer.data) 
 
-# Sends over a list of 10 movies from the database for now
+
+# Calls recommendation algorithm to get movie recommendations for the user
 class RetrieveMovies(APIView):
-    permission_classes = [IsAuthenticated]  # Adjust permissions as needed
-
+    permission_classes = [IsAuthenticated]
+ 
     def get(self, request):
-        # Fetch the first 10 movies from the database
-        movies = Movie.objects.all()[:10]
-        # Serialize the movie data
+        username = request.user.username
+        recommended_titles = recommend_movies(username, top_n=10)
+        movies = Movie.objects.filter(title__in=recommended_titles)
         serializer = DisplayMovieSerializer(movies, many=True)
         return Response(serializer.data)
 
