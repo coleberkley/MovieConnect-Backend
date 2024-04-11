@@ -4,6 +4,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.decomposition import TruncatedSVD
 from django.contrib.auth import get_user_model
 
+# This file contains the code for the SVD + Cosine Similarity recommendation model
 
 User = get_user_model()
 

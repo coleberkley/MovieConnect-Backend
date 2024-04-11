@@ -156,7 +156,7 @@ REST_FRAMEWORK = {
 # JSON Web Token Authentication
 SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ["Bearer"],
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=600),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True, # When set to True, ensures that a new refresh token is issued with each request to refresh an access token
     'BLACKLIST_AFTER_ROTATION': True, # If True, this setting ensures that once a refresh token is used to obtain a new access token, it is added to a blacklist and cannot be used again

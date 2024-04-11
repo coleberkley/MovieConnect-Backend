@@ -37,8 +37,6 @@ class Command(BaseCommand):
                     
                     movieId = row['movieId']
                     rating = row['rating']
-                    timestamp = row['timestamp']
-                    rating_datetime = datetime.utcfromtimestamp(int(timestamp)).replace(tzinfo=pytz.UTC)
 
 
                     # Ensure the movie exists before creating the rating
@@ -47,8 +45,7 @@ class Command(BaseCommand):
                         Rating.objects.create(
                             user=user,
                             movie=movie,
-                            rating=rating,
-                            timestamp=rating_datetime  
+                            rating=rating 
                         )
                         ratings_created += 1
                     else:

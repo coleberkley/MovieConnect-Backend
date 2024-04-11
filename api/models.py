@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.utils import timezone
 
 # User model that represents all users of MovieConnect
 class GenericUser(AbstractUser):
@@ -8,19 +9,6 @@ class GenericUser(AbstractUser):
     birth_date = models.DateField(null=True, blank=True) # Expects ISO 8601 format: YYYY-MM-DD
     is_private = models.BooleanField(default=False) # public/private users
     email = models.EmailField(unique=True) # requires unique email for sign-ups
-
-
-# class Person(models.Model):
-#     name = models.CharField(max_length=255) 
-#     birth_date = models.DateField(null=True, blank=True)
-#     gender = models.IntegerField(null=True, blank=True)  # 0 = not known, 1 = female, 2 = male
-
-
-# class Keyword(models.Model):
-#     name = models.CharField(max_length=255, unique=True)
-
-#     def __str__(self):
-#         return self.name
     
 
 class Genre(models.Model):
@@ -35,38 +23,23 @@ class Movie(models.Model):
     movie_id = models.IntegerField(null=True, unique=True)
     tmdb_id = models.IntegerField(null=True, unique=True)
     genres = models.ManyToManyField(Genre, related_name='movies') 
-    # keywords = models.ManyToManyField(Keyword, through='MovieKeyword', related_name='movies') 
-    # ratings = models.ManyToManyField(GenericUser, through='Rating', related_name='rated_movies')
-    # people = models.ManyToManyField(Person, through='MoviePerson', related_name='movies')
     poster_url = models.CharField(max_length=255, null=True, blank=True)  # URL to the movie poster
     overview = models.TextField(null=True, blank=True)  # Movie overview or description
     runtime = models.IntegerField(null=True, blank=True)  # Runtime in minutes
     adult = models.BooleanField(default=False) # Indicates if the movie is adult content
+    cast = models.TextField(null=True, blank=True)  # Cast members
+    release_date = models.DateField(null=True, blank=True)  # Release date
+    keywords = models.TextField(null=True, blank=True)  # Keywords
 
     def __str__(self):
         return self.title
     
 
-# class MovieKeyword(models.Model):
-#     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-#     keyword = models.ForeignKey(Keyword, on_delete=models.CASCADE)
-
-#     class Meta:
-#         unique_together = ('movie', 'keyword')
-
-
-# class MoviePerson(models.Model):
-#     movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
-#     person = models.ForeignKey(Person, on_delete=models.CASCADE)
-#     role = models.CharField(max_length=255)  # E.g., "Actor", "Director"
-#     character_name = models.CharField(max_length=255, null=True, blank=True)  # Only relevant for actors
-
-
 class Rating(models.Model):
     user = models.ForeignKey(GenericUser, on_delete=models.CASCADE, related_name='user_ratings')
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='movie_ratings')
     rating = models.FloatField()
-    timestamp = models.DateTimeField()
+    timestamp = models.DateTimeField(auto_now_add=True, auto_now=True)
 
 
 class WatchedMovie(models.Model):
@@ -76,3 +49,20 @@ class WatchedMovie(models.Model):
 
     class Meta:
         unique_together = ('user', 'movie')
+
+
+class FriendRequest(models.Model):
+    from_user = models.ForeignKey(GenericUser, on_delete=models.CASCADE, related_name='sent_requests')
+    to_user = models.ForeignKey(GenericUser, on_delete=models.CASCADE, related_name='received_requests')
+    created_at = models.DateTimeField(default=timezone.now)
+    accepted = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('from_user', 'to_user')
+        
+
+class Comment(models.Model):
+    user = models.ForeignKey(GenericUser, on_delete=models.CASCADE, related_name='comments')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='comments')
+    body = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)

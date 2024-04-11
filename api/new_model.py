@@ -5,6 +5,8 @@ import pandas as pd
 import xgboost as xgb
 from django.db.models import Case, When
 
+# This file contains the code for the SVD + XGBoost recommendation model
+
 def get_recommendations_for_user(username):
 
     # Fetch data from the database
