@@ -104,7 +104,7 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Request Format: Provide user credentials (access token)
 - Response Format: Returns a response body with fields: 'username', 'email', 'birth_date', 'is_private', 'bio'
 
-### Rated Movies
+#### Rated Movies
 - Endpoint: `/api/user/movies/rated`
 - Method: GET
 - Purpose: Retrieves all movies the signed in user has rated.
