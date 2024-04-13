@@ -234,6 +234,42 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Extra Notes: id resembles the request id. from_user will always be the signed in user, and to_user will be the recipient user of each request. The only field that really matters for display purposes is the to_user username per request. 
 
 
+## Services and Configuration
+
+### Backend Framework
+- Django: Chosen for its robustness and flexibility in building backend applications.
+
+### API Framework
+- Django Rest Framework: Integrated with Django to provide a powerful toolkit for building Web APIs. The API operates on port 8000 and is containerized for both development and production environments.
+
+### Web Server
+- Gunicorn: Employed as the Web Server Gateway Interface (WSGI) to serve the Django application, enhancing performance over Django's built-in server.
+
+### Database
+- Postgres: Utilizes port 5432 and runs in a dedicated Docker container. Data persistence is managed via Docker Volumes.
+- Development Database Access: Use `psql -h db -d mcdatabase_dev -U mcuser` to interact with the development database.
+    - Common PSQL Commands:
+    - `\dt`: Display database tables.
+    - `\l`: List all databases.
+    - `\c`: Switch databases.
+    - `\q`: Quit the PSQL shell.
+    - `select * from <model>`: Fetch all instances of a model.
+
+### Reverse Proxy Server
+- Nginx: Handles incoming requests and routes them to the appropriate backend service. Supports SSL for HTTPS in production with certificates from Let's Encrypt. Nginx listens on port 8080 and proxies requests to Django or serves static files as needed.
+
+### Containerization
+- Docker: Provides isolated environments for each service (API server, Postgres, Nginx, etc.). Docker Compose orchestrates the container setup and management.
+    - Docker Commands:
+        - `docker-compose up -d`: Start containers in detached mode.
+        - `docker-compose build`, `docker-compose up -d --build`: Rebuild containers.
+        - `docker-compose stop`: Stop running containers.
+        - `docker-compose down`: Remove containers.
+        - `docker-compose down -v`: Remove containers and volumes.
+        - `docker ps`: List active containers.
+        - `docker exec -it <container_name_or_id> /bin/bash`: Access container shell.
+        - `exit`: Leave container shell.
+
 
 ## Set Up
 Will explain how to install this backend here.
