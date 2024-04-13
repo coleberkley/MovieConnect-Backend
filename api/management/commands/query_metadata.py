@@ -20,8 +20,10 @@ class Command(BaseCommand):
         success_count = 0
         fail_count = 0
 
+        log_file_path = os.path.join('Logs', 'missing_metadata.txt')
+
         # Open a file to log failed TMDB IDs
-        with open('failed_tmdb_ids.txt', 'w') as log_file:
+        with open(log_file_path, 'w') as log_file:
 
             for movie in movies:
                 # Skip movies that already have poster_url, overview, runtime, and adult fields filled
@@ -65,17 +67,20 @@ class Command(BaseCommand):
                             time.sleep(1)  # Wait a bit longer before retrying
                     except Exception as e:
                         self.stdout.write(self.style.ERROR(f'Error updating {movie.title}: {str(e)}'))
-                        fail_count += 1
-                        break  # Exit retry loop on exception
+                        retry_count += 1
+                        # break  # Exit retry loop on exception
 
                 # After max retries, log the TMDB ID to file
                 if retry_count >= max_retries:
+                    fail_count += 1
                     log_message = f'Failed to update {movie.title} with TMDB ID: {movie.tmdb_id}\n'
                     log_file.write(log_message)
                     self.stdout.write(self.style.ERROR(log_message))
 
+            log_file.write(f"Finished. Successful Updates: {success_count} \n")
+            log_file.write(f"Amount of failed updates: {fail_count} \n")
+
         self.stdout.write(self.style.SUCCESS(f'Update completed. {success_count} movies updated successfully.'))
         if fail_count > 0:
             self.stdout.write(self.style.WARNING(f'{fail_count} movies failed to update. Check failed_tmdb_ids.txt for details.'))
-
 

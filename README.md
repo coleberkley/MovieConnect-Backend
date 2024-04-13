@@ -1,56 +1,22 @@
 # MovieConnect Backend
 
-## Overview
-This README outlines everything about the MovieConnect backend. In essence, MovieConnect is both a movie-recommendation and social media platform which allows users to rate movies, add new friends, recieve movie recommendations, and more. 
+## Introduction
+This README outlines everything about the MovieConnect backend. In essence, MovieConnect is both a movie-recommendation and social media platform which allows users to browse movies to watch and connect with other users. This repository contains all backend code for this application.
 
 ## Table of Contents
-- Services and Configuration: Tech Stack, Design, Infrastructure, Environment
-- Functionality: User Interface Functionality that this backend expects
+- Overview: High level description of the program and backend
+- Expected Functionality: User Interface Functionality that this backend expects
 - API Endpoints: Instructions on how to interact with this API
+- Services and Configuration: Tech Stack, Design, Environment
 - Set Up: Instructions on how to set up this backend on your local machine yourself.
 
+## Overview
+Finish later when backend is done
 
-## Services and Configuration
-
-### Backend Framework
-- Django: Chosen for its robustness and flexibility in building backend applications.
-
-### API Framework
-- Django Rest Framework: Integrated with Django to provide a powerful toolkit for building Web APIs. The API operates on port 8000 and is containerized for both development and production environments.
-
-### Web Server
-- Gunicorn: Employed as the Web Server Gateway Interface (WSGI) to serve the Django application, enhancing performance over Django's built-in server.
-
-### Database
-- Postgres: Utilizes port 5432 and runs in a dedicated Docker container. Data persistence is managed via Docker Volumes.
-- Development Database Access: Use `psql -h db -d mcdatabase_dev -U mcuser` to interact with the development database.
-    - Common PSQL Commands:
-    - `\dt`: Display database tables.
-    - `\l`: List all databases.
-    - `\c`: Switch databases.
-    - `\q`: Quit the PSQL shell.
-    - `select * from <model>`: Fetch all instances of a model.
-
-### Reverse Proxy Server
-- Nginx: Handles incoming requests and routes them to the appropriate backend service. Supports SSL for HTTPS in production with certificates from Let's Encrypt. Nginx listens on port 8080 and proxies requests to Django or serves static files as needed.
-
-### Containerization
-- Docker: Provides isolated environments for each service (API server, Postgres, Nginx, etc.). Docker Compose orchestrates the container setup and management.
-    - Docker Commands:
-        - `docker-compose up -d`: Start containers in detached mode.
-        - `docker-compose build`, `docker-compose up -d --build`: Rebuild containers.
-        - `docker-compose stop`: Stop running containers.
-        - `docker-compose down`: Remove containers.
-        - `docker-compose down -v`: Remove containers and volumes.
-        - `docker ps`: List active containers.
-        - `docker exec -it <container_name_or_id> /bin/bash`: Access container shell.
-        - `exit`: Leave container shell.
-
-
-## Functionality
+## Expected Functionality
 Here I will explain the application functionality that this API expects to support.
 
-Upon loading the application, a user is prompted to sign in. The user can switch to the sign up page if desired. If signing up, the user will provide a unique username and email, as well as their age and a chosen password. When clicking sign up, the user will automatically be signed in and returned to the home page. If signing in, the user will provide their unique username and password and will be redirected to the home page.
+Upon loading the application, a user is prompted to sign in. The user can switch to the sign up page if desired. If signing up, the user will provide a username, email, password, and birthdate. When clicking sign up, the user will automatically be signed in and returned to the home page. If signing in, the user will provide their username and password and will be redirected to the home page.
 
 Upon viewing the home page, a user will see a list for each recommendation model we have. This could be anywhere from 1-3 lists depending on what is done. The user can click through each list, which can have a varying number of movies depending on the model and perhaps the user. From the home page, a user can click on a specific movie to view that movie and maybe rate or comment under it. A user can also logout, view their own profile, or search for a specific movie by title instead of finding one in the provided lists.
 
@@ -58,7 +24,7 @@ Upon viewing the user's profile, a user should be prompted with their informatio
 
 Users should be able to look up other users by username. If users are found, the current user should be able to click onto another user's profile and view it. If the viewed user is public or if the viewed user is friends with the current user, the current user can see the other user's rated movies list. The current user should be able to request a friendship with the viewed user if one hasn't been requested already (or they are already friends). Likewise, the current user should be able to unfriend the viewed user if they are friends.
 
-Upon viewing a movie page, a user should see all relative information for that movie. This includes the title, genre(s), cast (actors, directors, etc), runtime, adult status, poster, overview, release date, and overall rating. There should also be a comments section somewhere in this movie page that renders every comment for that movie. A user should be able to rate the movie if they haven't yet, or re-rate it if they have. Likewise, a user should be able to add comments to that movie's comment section. The page should refresh after these actions to retrieve the updated comment section and user rating. 
+Upon viewing a movie page, a user should see all relative information for that movie. This includes the title, genre(s), actor(s), director(s), runtime, adult status, poster, overview, release date, and overall rating. There should also be a comments section somewhere in this movie page that renders every comment for that movie. A user should be able to rate the movie if they haven't yet, or re-rate it if they have. Likewise, a user should be able to add comments to that movie's comment section. The page should refresh after these actions to retrieve the updated comment section and user rating. 
 
 
 ## API Endpoints 
@@ -102,10 +68,10 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Method: GET
 - Purpose: Retrieves all user metadata for the signed in user. 
 - Request Format: Provide user credentials (access token)
-- Response Format: Returns a response body with fields: 'username', 'email', 'birth_date', 'is_private', 'bio'
+- Response Format: Returns a response body with fields: 'id', 'username', 'email', 'birth_date', 'is_private', 'bio'
 
 #### Rated Movies
-- Endpoint: `/api/user/movies/rated`
+- Endpoint: `/api/user/movies/rated/`
 - Method: GET
 - Purpose: Retrieves all movies the signed in user has rated.
 - Request Format: Provide user credentials (access token)
@@ -270,9 +236,10 @@ Remember to prepend `http://localhost:80` before each endpoint.
 
 
 ## Set Up
-TODO:
 Will explain how to install this backend here.
-Rough Outline for Now:
+
+### Rough Outline for Now
+
 - Install Docker, Postgres, Python, etc.
 - Creating a Postgres superuser
 - Clone repository
@@ -285,3 +252,29 @@ Rough Outline for Now:
 - Running management scripts to populate local database with data
 - Running, Stopping, Using the backend
 - Deploying the backend
+
+### Notes on Management Scripts
+
+Outlining what each management script does. Need to refurbish these soon for Set Up instructions but purpose should stay.
+
+#### CSV-Sourced DB Population Scripts
+- install_movies.py : Reads movies.csv and installs each movie's movie_id and genres
+- install_links.py : Reads links.csv and finds each movie_id and maps to a tmdb_id
+- install_ratings.py : Reads ratings.csv and creates users and ratings for each new user and rating
+
+#### API-Sourced DB Scripts
+- query_metadata.py : Queries TMDb API for remaining metadata per movie
+- query_credits.py : Queries TMDb API for Director and Actor data per movie
+
+#### Validation Scripts:
+- clean_data.py : Deletes any movie and its associated ratings if a movie is missing any fields
+
+#### Debugging Scripts:
+- log_missing_tmdb.py : Logs any movie_id that is missing tmdb_id
+- log_missing_fields.py : Logs any movie_id with their missing metadata fields
+- log_missing_credits.py : Logs any movie_id with their missing credits fields
+- print_tmdb_query : Prints a TMDb query response to console
+- print_user_ratings : Prints a user's rated movies to console
+- print_user_recs : Prints a user's recommendations to console
+
+Any scripts that are no longer important start with 'old'.

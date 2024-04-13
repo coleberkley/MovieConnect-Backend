@@ -83,8 +83,7 @@ WSGI_APPLICATION = 'mcbackend.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 
-# env = environ.Env()
-# environ.Env.read_env()  # read .env file
+
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 # Uses local .env (not shared on GitHub) for development passwords
 DATABASES = {
@@ -179,5 +178,5 @@ CORS_ALLOW_CREDENTIALS = True
 
 # For testing with local react app
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',  # Adjust this to the origin of your React app
+    'http://localhost:3000',  
 ]

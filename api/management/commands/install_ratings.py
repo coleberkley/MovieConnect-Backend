@@ -18,6 +18,9 @@ class Command(BaseCommand):
         users_created = 0
         ratings_created = 0
 
+        # Creates users and ratings from ratings.csv to populate the database with
+        # enough user data to use the recommendation system
+
         try:
             with open(csv_file_path, newline='', encoding='utf-8') as csvfile:
                 reader = csv.DictReader(csvfile)
@@ -29,7 +32,7 @@ class Command(BaseCommand):
                         username=username,
                         defaults={
                             'email': f'{username}@example.com',
-                            'password': 'genericpassword123'  # Consider using a more secure password or prompt users to change it
+                            'password': 'genericpassword123'  
                         }
                     )
                     if created:

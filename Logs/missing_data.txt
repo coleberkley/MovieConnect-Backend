@@ -1,0 +1,1 @@
+Total movies with missing fields: 0

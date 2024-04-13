@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import Movie, Genre, Rating, Comment, FriendRequest
+from .models import Movie, Genre, Rating, Comment, FriendRequest, Actor, Director
 from django.db.models import Avg
 from django.utils import timezone
 from rest_framework.validators import UniqueValidator
@@ -35,7 +35,7 @@ class UserInfoSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'birth_date', 'is_private', 'bio']
+        fields = ['id', 'username', 'email', 'birth_date', 'is_private', 'bio']
 
 
 # Serializer for user sign up
@@ -106,6 +106,21 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ['name']
 
 
+# Serializer for an actor
+class ActorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Actor
+        fields = ['name']
+
+
+# Serializer for a director
+class DirectorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Director
+        fields = ['name']
+
+
+# Serializer for a comment
 class CommentSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source='user.username')
 
@@ -117,12 +132,17 @@ class CommentSerializer(serializers.ModelSerializer):
 # Serializer for displaying the detailed view of a movie for a movie page
 class MovieDetailSerializer(serializers.ModelSerializer):
     genres = GenreSerializer(many=True, read_only=True)
+    actors = ActorSerializer(many=True, read_only=True)
+    directors = DirectorSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
     rated = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
-        fields = ['id', 'title', 'poster_url', 'overview', 'runtime', 'adult', 'cast', 'release_date', 'genres', 'average_rating', 'rated']
+        fields = [
+            'id', 'title', 'poster_url', 'overview', 'runtime', 'adult',
+            'release_date', 'genres', 'actors', 'directors', 'average_rating', 'rated'
+        ]
 
     def get_average_rating(self, obj):
         ratings = Rating.objects.filter(movie=obj)

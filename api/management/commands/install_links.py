@@ -9,6 +9,12 @@ class Command(BaseCommand):
         parser.add_argument('csv_file', type=str, help='Path to the CSV file containing movieId and tmdbId')
 
     def handle(self, *args, **kwargs):
+
+        # This script loops through links.csv and finds the corresponding movie_id in the database
+        # to update that movie's tmdb_id field
+        # We need to map each movie_id to a tmdb_id for fetching other metadata from TMDb API later
+
+
         csv_file_path = kwargs['csv_file']
         updated_count = 0
         not_found_count = 0
