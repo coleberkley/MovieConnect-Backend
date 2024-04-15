@@ -32,17 +32,24 @@ class Director(models.Model):
         return self.name
 
 
+class Keyword(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Movie(models.Model):
     title = models.CharField(max_length=255)
     movie_id = models.IntegerField(null=True, unique=True)
     tmdb_id = models.IntegerField(null=True, unique=True)
     genres = models.ManyToManyField(Genre, related_name='movies') 
-    poster_url = models.CharField(max_length=255, null=True, blank=True)  # URL to the movie poster
-    overview = models.TextField(null=True, blank=True)  # Movie overview or description
-    runtime = models.IntegerField(null=True, blank=True)  # Runtime in minutes
-    adult = models.BooleanField(default=False) # Indicates if the movie is adult content
-    release_date = models.DateField(null=True, blank=True)  # Release date
-    keywords = models.TextField(null=True, blank=True)  # Keywords
+    keywords = models.ManyToManyField(Keyword, related_name='movies', blank=True)
+    poster_url = models.CharField(max_length=255, null=True, blank=True)  
+    overview = models.TextField(null=True, blank=True)  
+    runtime = models.IntegerField(null=True, blank=True)  
+    adult = models.BooleanField(default=False) 
+    release_date = models.DateField(null=True, blank=True)  
     actors = models.ManyToManyField(Actor, related_name='movies')
     directors = models.ManyToManyField(Director, related_name='movies')
 
