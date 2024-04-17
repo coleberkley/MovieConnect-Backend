@@ -34,7 +34,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         movie_id = 525662
         api_key = os.getenv('TMDB_KEY')
-        url = f'https://api.themoviedb.org/3/movie/{movie_id}/keywords?api_key={api_key}'
+        url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}'
 
         response = requests.get(url)
         if response.status_code == 200:

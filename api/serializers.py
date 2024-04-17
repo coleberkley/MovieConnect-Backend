@@ -5,10 +5,13 @@ from .models import Movie, Genre, Rating, Comment, FriendRequest, Actor, Directo
 from django.db.models import Avg
 from django.utils import timezone
 from rest_framework.validators import UniqueValidator
+from django.db.models import Q
+
 
 # Gets current User model declared in settings.py
 User = get_user_model()
 
+# Old Unused Serializer
 class GenericUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -20,22 +23,41 @@ class GenericUserSerializer(serializers.ModelSerializer):
         return user
 
 
+# Old Unused Serializer
 class UserNameSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ['username']
 
 
+# Serializer for user id and username fields
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username']
 
 
+# Serializer for User Profile fields
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'birth_date', 'is_private', 'bio']
+
+
+# Serializer for a different User Profile's fields
+class OtherUserProfileSerializer(serializers.ModelSerializer):
+    is_friend = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'bio', 'is_private', 'is_friend']
+
+    def get_is_friend(self, obj):
+        request_user = self.context['request'].user
+        return FriendRequest.objects.filter(
+            (Q(from_user=request_user, to_user=obj) | Q(from_user=obj, to_user=request_user)),
+            accepted=True
+        ).exists()
 
 
 # Serializer for user sign up

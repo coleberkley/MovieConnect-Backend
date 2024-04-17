@@ -5,12 +5,12 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from django.conf import settings
-from .serializers import UserSignUpSerializer, UserProfileSerializer, DisplayMovieSerializer, MovieDetailSerializer, CommentSerializer, RatingSerializer, FriendRequestSerializer, UserNameSerializer, UserInfoSerializer, UpdateProfileSerializer
+from .serializers import UserSignUpSerializer, UserProfileSerializer, DisplayMovieSerializer, MovieDetailSerializer, CommentSerializer, RatingSerializer, FriendRequestSerializer, UserNameSerializer, UserInfoSerializer, UpdateProfileSerializer, OtherUserProfileSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Movie, Rating, Comment, FriendRequest
 from django.db.models import Q
 from django.contrib.auth import get_user_model
-from .recommender import recommend_movies
+from .model_xgboost import recommend_movies
 
 User = get_user_model()
 
@@ -68,7 +68,7 @@ class CookieTokenRefreshView(TokenViewBaseMixin, TokenRefreshView):
     pass
 
 
-# Logout view
+# Logout 
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -76,6 +76,23 @@ class LogoutView(APIView):
         response = JsonResponse({"detail": "Successfully logged out."})
         response.delete_cookie('access_token')
         return response
+
+
+# Delete User Account
+class DeleteUserView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        try:
+            # Deleting the user
+            user.delete()
+            response = JsonResponse({"detail": "User account deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            # Removing the authentication cookie
+            response.delete_cookie('access_token')
+            return response
+        except Exception as e:
+            return Response({"error": "Failed to delete user.", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 # Retrieve User Data
@@ -139,28 +156,15 @@ class ListUserRatedMoviesView(APIView):
 
     def get(self, request, user_id):
         try:
-            # Attempt to retrieve the target user by ID
             target_user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
         
-        # Check if the target user is the signed-in user or if the profile is public
-        if request.user == target_user or not target_user.is_private:
-            user_ratings = Rating.objects.filter(user=target_user).values_list('movie', flat=True)
-        else:
-            # Check if the signed-in user and the target user are friends
-            if FriendRequest.objects.filter(
-                (Q(from_user=request.user) & Q(to_user=target_user) | 
-                 Q(from_user=target_user) & Q(to_user=request.user)),
-                accepted=True
-            ).exists():
-                user_ratings = Rating.objects.filter(user=target_user).values_list('movie', flat=True)
-            else:
-                return Response({'message': 'This user\'s ratings are private.'}, status=status.HTTP_403_FORBIDDEN)
+        # We remove the check for whether the target user is a friend or not
+        user_ratings = Rating.objects.filter(user=target_user).values_list('movie', flat=True)
 
         # Retrieve the corresponding movies
         rated_movies = Movie.objects.filter(id__in=user_ratings)
-        # Serialize the movies
         serializer = DisplayMovieSerializer(rated_movies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -281,6 +285,23 @@ class UserSearchView(APIView):
         return Response(serializer.data)
 
 
+# Retrieve another user's profile
+class RetrieveOtherUserProfile(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        try:
+            user = User.objects.get(pk=user_id)
+            if request.user.id == user_id:  # Avoid using this view for the signed-in user's own profile
+                return Response({'message': 'Use the retrieve_user_profile endpoint for own profile.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            context = {'request': request}
+            serializer = OtherUserProfileSerializer(user, context=context)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
 # Send a friend request
 class SendFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
@@ -338,6 +359,34 @@ class ListFriendsView(APIView):
         # Get all users to whom the user sent a friend request and was accepted
         friends_to_requests = User.objects.filter(
             sent_requests__to_user=user,
+            sent_requests__accepted=True
+        )
+
+        # Combine and deduplicate the two lists
+        friends = (friends_from_requests | friends_to_requests).distinct()
+
+        serializer = UserInfoSerializer(friends, many=True)
+        return Response(serializer.data)
+
+
+# Returns a list of friends (user ids and usernames) for a given user
+class ListUserFriendsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        try:
+            target_user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Get all users who have accepted a friend request from or to the target user
+        friends_from_requests = User.objects.filter(
+            received_requests__from_user=target_user,
+            received_requests__accepted=True
+        )
+
+        friends_to_requests = User.objects.filter(
+            sent_requests__to_user=target_user,
             sent_requests__accepted=True
         )
 

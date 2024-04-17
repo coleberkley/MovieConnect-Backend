@@ -27,7 +27,7 @@ class Command(BaseCommand):
 
             for movie in movies:
                 # Skip movies that already have poster_url, overview, runtime, and adult fields filled
-                if movie.poster_url and movie.overview and movie.runtime is not None and movie.adult is not None:
+                if movie.poster_url and movie.overview and movie.runtime and movie.release_date is not None and movie.adult is not None:
                     self.stdout.write(self.style.SUCCESS(f'Skipping {movie.title} as it already has all fields filled.'))
                     continue
 
@@ -44,7 +44,7 @@ class Command(BaseCommand):
                 time.sleep(0.1)  # Adjust based on the actual rate limit you wish to maintain
 
                 retry_count = 0
-                max_retries = 3  # Maximum number of retries per movie
+                max_retries = 5  # Maximum number of retries per movie
                 while retry_count < max_retries:
                     try:
                         response = requests.get(f'https://api.themoviedb.org/3/movie/{movie.tmdb_id}?api_key={api_key}')
@@ -56,6 +56,7 @@ class Command(BaseCommand):
                             movie.overview = data.get('overview')
                             movie.runtime = data.get('runtime')
                             movie.adult = data.get('adult', False)  # Set the adult field, default to False if not provided
+                            movie.release_date = data.get('release_date')  # Update release date
                             movie.save()
                             success_count += 1
                             self.stdout.write(self.style.SUCCESS(f'Successfully updated {movie.title}'))

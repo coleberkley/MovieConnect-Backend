@@ -40,7 +40,7 @@ Remember to prepend `http://localhost:80` before each endpoint.
 
 
 
-### User Management
+### User Authentication
 
 #### Register New User 
 - Endpoint: `/api/user/signup/`
@@ -63,6 +63,17 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Request Format: Provide user credentials (access token)
 - Response Format: Returns a success message indicating the user has been logged out, and the access token cookie is cleared. 
 
+#### Delete Account
+- Endpoint: `/api/user/delete/`
+- Method: DELETE
+- Purpose: Deletes the signed in user's account and logs the user out
+- Request Format: Provide user credentials (access token)
+- Response Format: Returns a successful 204 status indicating the user has been deleted. We will remove the JWT cookie in the response like the Logout function does, so the user should be logged out upon deletion and routed to sign in/sign up. If user deletion somehow fails, it returns a 500 status. 
+
+
+
+### User Profile Page
+
 #### User Details
 - Endpoint: `/api/user/userprofile/`
 - Method: GET
@@ -84,6 +95,56 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Purpose: 
 - Request Format: Provide user credentials (access token)
 - Response Format: 200 status if updated successfully or a 400 status if unsuccessful.
+
+#### Retrieve Friends List
+- Endpoint: `/api/friends/`
+- Method: GET
+- Purpose: Retrieves the list of users the signed in user is friends with.
+- Request Format: Provide user credentials (access token). 
+- Response Format: Returns a list of users. Each user in the list has fields: 'id', 'username'
+- Extra Notes: Prepare for empty lists as this signifies no friends. 
+
+#### Remove a Friend
+- Endpoint: `/api/user/remove-friend/<int:friend_id>/`
+- Method: DELETE
+- Purpose: Deletes the friendship object between two users. 
+- Request Format: Provide user credentials (access token). The friend's id is provided in friend_id.
+- Response Format: Returns 404 status for error and 204 status for successful deletion.
+- Extra Notes: This requires the id of a FRIEND, not the id of the (accepted) request. Each friend's id is provided in the friends list.
+
+#### Retrieve List of Incoming Requests
+- Endpoint: `/api/friend-requests/incoming/`
+- Method: GET
+- Purpose: Retrieve all incoming friend requests for the signed in user.
+- Request Format: Provide user credentials (access token)
+- Response Format: A list of incoming requests is returned. Each request in the list contains fields: 'id', 'from_user', 'to_user', 'created_at', 'accepted'
+- Extra Notes: id resembles the request id. from_user will be the sender username per request, and to_user will always be the signed in user's username. The only field that really matters for display purposes is the from_user username per request. 
+
+#### Retrieve List of Outgoing Requests
+- Endpoint: `/api/friend-requests/outgoing/`
+- Method: GET
+- Purpose: Retrieve all outgoing friend requests for the signed in user. 
+- Request Format: Provide user credentials (access token)
+- Response Format: A list of outgoing requests is returned. Each request in the list contains fields: 'id', 'from_user', 'to_user', 'created_at', 'accepted'
+- Extra Notes: id resembles the request id. from_user will always be the signed in user, and to_user will be the recipient user of each request. The only field that really matters for display purposes is the to_user username per request. 
+
+#### Accept or Deny Incoming Request
+- Endpoint: `/api/friend-requests/update/<int:request_id>/`
+- Method: POST, DELETE
+- Purpose: Accept or deny an incoming request. Denying will delete the friend request object. 
+- Request Format (POST): Provide user credentials (access token). The request's id is provided in request_id. 
+- Response Format (POST): Returns 404 status if failed. Returns 200 status if request successfully accepted.
+- Request Format (DELETE): Provide user credentials (access token). The request's id is provided in request_id. 
+- Response Format (DELETE): Returns 404 status if failed. Returns 204 status if successfully deleted.
+- Extra Notes: This requires the id of a REQUEST, not the id of the user who sent the request. The request id per incoming request is provided in the incoming requests list.
+
+#### Cancel Outgoing Request
+- Endpoint: `/api/friend-requests/cancel/<int:request_id>/`
+- Method: DELETE
+- Purpose: Cancels an outgoing request which will delete the friend request object. 
+- Request Format: Provide user credentials (access token). The request's id is provided in request_id. 
+- Response Format: Returns 204 status if successful, 404 if unsuccessful
+- Extra Notes: This requires the id of a REQUEST, not the id of the user who sent the request. The request id per incoming request is provided in the incoming requests list.
 
 
 
@@ -111,7 +172,15 @@ Remember to prepend `http://localhost:80` before each endpoint.
 
 
 
-### Movie Views
+### Searching
+
+#### Search for a User
+- Endpoint: `/api/user/search/`
+- Method: GET
+- Purpose: Search for user(s) given a username
+- Request Format: Provide user credentials (access token). Query params should contain the 'username' field. 
+- Response Format: Returns a list of users that contain that username. Each user in the list has fields: 'id', 'username'
+- Extra Notes: An example would be `/api/user/search?username=johndoe`. Prepare for empty lists as this will signify no results from the search. 
 
 #### Search for a Movie
 - Endpoint: `/api/movie/search/`
@@ -120,6 +189,10 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Request Format: Provide user credentials (access token). Query params should contain the 'title' field.
 - Response Format: Provides a list of movies that match that title (Likely a list of 1 movie) with fields for each movie: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
 - Extra Notes: An example POST request for title 'avengers' should look like `/api/movie/search?title=avengers`. Prepare for empty lists as this will signify no results from the search. 
+
+
+
+### Movie Page
 
 #### Get a Movie's Details
 - Endpoint: `/api/movie/<int:pk>/`
@@ -157,31 +230,31 @@ Remember to prepend `http://localhost:80` before each endpoint.
 
 
 
-### Interaction
+### Other User Page
 
-#### Search for a User
-- Endpoint: `/api/user/search/`
+#### Other User Profile
+- Endpoint: `/api/user/<int:user_id>/profile/`
 - Method: GET
-- Purpose: Search for user(s) given a username
-- Request Format: Provide user credentials (access token). Query params should contain the 'username' field. 
-- Response Format: Returns a list of users that contain that username. Each user in the list has fields: 'id', 'username'
-- Extra Notes: An example would be `/api/user/search?username=johndoe`. Prepare for empty lists as this will signify no results from the search. 
+- Purpose: Get another user's profile data
+- Request Format: Provide user credentials (access token). The desired user's id is provided in the url. Get this id from searching for a user or from a user list like a friends list. 
+- Response Format: Returns the following fields for that user: 'id', 'username', 'bio', 'is_private', 'is_friend'
+- Extra Notes: is_private is true if the user is private, false otherwise. is_friend is true if the user is friends with the signed in user, false otherwise. 
+
+#### Other User Friends List
+- Endpoint: `/api/user/<int:user_id>/friends/`
+- Method: GET
+- Purpose: Get another user's friends list
+- Request Format: Provide user credentials (access token). The desired user's id is provided in the url. 
+- Response Format: Returns a list of users that are friends with the specified user. Each user in the list will contain an 'id' and 'username' just like the signed-in user's friends endpoint response.
+- Extra Notes: This should only be displayed if the user is public and/or friends with the signed in user. 
 
 #### View a User's Rated Movies
-- Endpoint: `user/<int:user_id>/movies/rated/`
+- Endpoint: `/api/user/<int:user_id>/movies/rated/`
 - Method: GET
-- Purpose: If a given user is public or friends with the signed in user, a list of rated movies will return for that other user.
-- Request Format: Provide user credentials (access token). Other user id is specified in the url. 
-- Response Format: Returns 404 if user id not found. Returns 403 status if user is private. If successful, returns 200 status with a list of movies in the response body. Each movie in the list has fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
+- Purpose: Get another user's rated movies list. 
+- Request Format: Provide user credentials (access token). The desired user's id is provided in the url.
+- Response Format: Returns a 200 status when successful with a list of movies. Each movie in the list has fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
 - Extra Notes: If the response status is 200 but the list is empty, then the user has not rated any movies.
-
-#### Retrieve Friends List
-- Endpoint: `/api/friends/`
-- Method: GET
-- Purpose: Retrieves the list of users the signed in user is friends with.
-- Request Format: Provide user credentials (access token). 
-- Response Format: Returns a list of users. Each user in the list has fields: 'id', 'username'
-- Extra Notes: Prepare for empty lists as this signifies no friends. 
 
 #### Send a Friend Request
 - Endpoint: `/api/send-friend-request/<int:to_user_id>/`
@@ -189,49 +262,9 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Purpose: Sends a friend request to a user id from the signed in user. 
 - Request Format: Provide user credentials (acess token). The recipient id is provided in the url. 
 - Response Format: Returns 201 status if successful, 404 if unsuccessful
-- Extra Notes: Should only fail if the recipient doesn't exist.
+- Extra Notes: Should only fail if the recipient doesn't exist. We can check if the signed-in user is already friends with to_user_id from querying to_user_id's profile data (is_friend status). We can also check if there's a pending request already sent to this user if to_user_id exists in the user ids from the signed-in user's outgoing friend requests list. 
 
-#### Accept or Deny Incoming Request
-- Endpoint: `/api/friend-requests/update/<int:request_id>/`
-- Method: POST, DELETE
-- Purpose: Accept or deny an incoming request. Denying will delete the friend request object. 
-- Request Format (POST): Provide user credentials (access token). The request's id is provided in request_id. 
-- Response Format (POST): Returns 404 status if failed. Returns 200 status if request successfully accepted.
-- Request Format (DELETE): Provide user credentials (access token). The request's id is provided in request_id. 
-- Response Format (DELETE): Returns 404 status if failed. Returns 204 status if successfully deleted.
-- Extra Notes: This requires the id of a REQUEST, not the id of the user who sent the request. The request id per incoming request is provided in the incoming requests list.
 
-#### Cancel Outgoing Request
-- Endpoint: `/api/friend-requests/cancel/<int:request_id>/`
-- Method: DELETE
-- Purpose: Cancels an outgoing request which will delete the friend request object. 
-- Request Format: Provide user credentials (access token). The request's id is provided in request_id. 
-- Response Format: Returns 204 status if successful, 404 if unsuccessful
-- Extra Notes: This requires the id of a REQUEST, not the id of the user who sent the request. The request id per incoming request is provided in the incoming requests list.
-
-#### Remove a Friend
-- Endpoint: `user/remove-friend/<int:friend_id>/`
-- Method: DELETE
-- Purpose: Deletes the friendship object between two users. 
-- Request Format: Provide user credentials (access token). The friend's id is provided in friend_id.
-- Response Format: Returns 404 status for error and 204 status for successful deletion.
-- Extra Notes: This requires the id of a FRIEND, not the id of the (accepted) request. Each friend's id is provided in the friends list.
-
-#### Retrieve List of Incoming Requests
-- Endpoint: `/api/friend-requests/incoming/`
-- Method: GET
-- Purpose: Retrieve all incoming friend requests for the signed in user.
-- Request Format: Provide user credentials (access token)
-- Response Format: A list of incoming requests is returned. Each request in the list contains fields: 'id', 'from_user', 'to_user', 'created_at', 'accepted'
-- Extra Notes: id resembles the request id. from_user will be the sender username per request, and to_user will always be the signed in user's username. The only field that really matters for display purposes is the from_user username per request. 
-
-#### Retrieve List of Outgoing Requests
-- Endpoint: `/api/friend-requests/outgoing/`
-- Method: GET
-- Purpose: Retrieve all outgoing friend requests for the signed in user. 
-- Request Format: Provide user credentials (access token)
-- Response Format: A list of outgoing requests is returned. Each request in the list contains fields: 'id', 'from_user', 'to_user', 'created_at', 'accepted'
-- Extra Notes: id resembles the request id. from_user will always be the signed in user, and to_user will be the recipient user of each request. The only field that really matters for display purposes is the to_user username per request. 
 
 
 ## Services and Configuration
@@ -304,6 +337,7 @@ Outlining what each management script does. Need to refurbish these soon for Set
 
 #### Validation Scripts:
 - clean_data.py : Deletes any movie and its associated ratings if a movie is missing any fields
+- fix_user_passwords : fixes the passwords of script-generated user accounts
 
 #### Debugging Scripts:
 - log_missing_tmdb.py : Logs any movie_id that is missing tmdb_id
@@ -312,5 +346,6 @@ Outlining what each management script does. Need to refurbish these soon for Set
 - print_tmdb_query : Prints a TMDb query response to console
 - print_user_ratings : Prints a user's rated movies to console
 - print_user_recs : Prints a user's recommendations to console
+- build_datasets : builts csv datasets from current database data for training models
 
 Any scripts that are no longer important start with 'old'.
