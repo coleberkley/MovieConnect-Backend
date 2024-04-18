@@ -40,7 +40,7 @@ urlpatterns = [
     path('user/delete/', DeleteUserView.as_view(), name='delete_user'), # Delete account
 
     # User Profile Page
-    path('user/userprofile/', RetrieveUserProfile.as_view(), name='retrieve_user_profile'), # Get user data
+    path('user/profile/', RetrieveUserProfile.as_view(), name='retrieve_user_profile'), # Get user data
     path('user/movies/rated/', ListRatedMoviesView.as_view(), name='list_rated_movies'), # Get rated movies list for signed-in user
     path('user/update/', UpdateProfileView.as_view(), name='update_profile'), # Update user profile
     path('friends/', ListFriendsView.as_view(), name='list_friends'), # Get friends list

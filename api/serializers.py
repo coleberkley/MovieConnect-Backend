@@ -91,20 +91,22 @@ class UserSignUpSerializer(serializers.ModelSerializer):
 class UpdateProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'is_private']
+        fields = ['username', 'email', 'password', 'is_private', 'bio'] 
         extra_kwargs = {
             'password': {'write_only': True, 'required': False},
             'username': {'required': False},
             'email': {'required': False},
             'is_private': {'required': False},
+            'bio': {'required': False}  
         }
 
     def update(self, instance, validated_data):
-        # Update the username, email, and is_private status if provided
+        # Update the username, email, is_private status, and bio if provided
         instance.username = validated_data.get('username', instance.username)
         instance.email = validated_data.get('email', instance.email)
         instance.is_private = validated_data.get('is_private', instance.is_private)
-        
+        instance.bio = validated_data.get('bio', instance.bio)  # Update bio
+
         # Handle password update securely
         password = validated_data.get('password', None)
         if password:
@@ -112,6 +114,7 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
         
         instance.save()
         return instance
+
 
 
 # Serializer for displaying each movie in a movie list

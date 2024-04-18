@@ -75,7 +75,7 @@ Remember to prepend `http://localhost:80` before each endpoint.
 ### User Profile Page
 
 #### User Details
-- Endpoint: `/api/user/userprofile/`
+- Endpoint: `/api/user/profile/`
 - Method: GET
 - Purpose: Retrieves all user metadata for the signed in user. 
 - Request Format: Provide user credentials (access token)
@@ -93,7 +93,7 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Endpoint: `/api/user/update/`
 - Method: PUT
 - Purpose: Updates the siged in user's profile. 
-- Request Format: Provide user credentials (access token). Provide fields in the request body for any of the following to be updated: `username, email, password, is_private'. Any partial combination is supported, doesn't have to be all 4 fields.
+- Request Format: Provide user credentials (access token). Provide fields in the request body for any of the following to be updated: 'username', 'email', 'password', 'bio', 'is_private'. Any partial combination is supported, doesn't have to be all 4 fields.
 - Response Format: 200 status if updated successfully or a 400 status if unsuccessful. 
 - Extra Notes: The is_private should be a boolean. Up to you how to make this a frontend button. There can be a lot of reasons a 400 status is returned, like if the new email or username is already taken in the database. The response body should contain the corresponding type of error in a message. For simplicity we may just want to emit some 'unsuccessful' message on a 400 status response. 
 
