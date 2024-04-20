@@ -188,26 +188,13 @@ class MovieDetailSerializer(serializers.ModelSerializer):
 class RatingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rating
-        fields = ['movie', 'user', 'rating']
-        extra_kwargs = {
-            'user': {'read_only': True},
-            'movie': {'read_only': True}
-        }
+        fields = ['id', 'movie', 'user', 'rating', 'timestamp']
+        read_only_fields = ['id', 'user', 'movie', 'timestamp']  # Ensures these fields are not writable directly
 
-    def create(self, validated_data):
-        # Creating a new rating
-        user = self.context['request'].user
-        movie_id = self.context['view'].kwargs['pk']
-        rating = validated_data['rating']
-        return Rating.objects.create(user=user, movie_id=movie_id, rating=rating)
-
-    def update(self, instance, validated_data):
-        # Updating an existing rating
-        instance.rating = validated_data.get('rating', instance.rating)
-        instance.save()
-        return instance
+    # No need for custom create or update methods if they're handled in the view
 
 
+# Serializer for friend requests
 class FriendRequestSerializer(serializers.ModelSerializer):
     from_user = serializers.SlugRelatedField(slug_field='username', read_only=True)
     to_user = serializers.SlugRelatedField(slug_field='username', read_only=True)

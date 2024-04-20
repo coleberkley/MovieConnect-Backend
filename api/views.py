@@ -9,6 +9,7 @@ from .serializers import UserSignUpSerializer, UserProfileSerializer, DisplayMov
 from rest_framework.permissions import IsAuthenticated
 from .models import Movie, Rating, Comment, FriendRequest
 from django.db.models import Q
+from rest_framework.exceptions import NotFound
 from django.contrib.auth import get_user_model
 from .model_xgboost import recommend_movies
 
@@ -250,24 +251,27 @@ class RateMovieView(APIView):
         except Movie.DoesNotExist:
             return Response({'message': 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Data to be validated and saved
-        data = {'rating': request.data.get('rating'), 'movie': movie.id, 'user': user.id}
-        
-        # Check if a rating by this user for this movie already exists
-        existing_rating = Rating.objects.filter(user=user, movie=movie).first()
-        
-        # If it exists, we update it, otherwise, we create a new one
-        if existing_rating:
-            serializer = RatingSerializer(existing_rating, data=data)
-        else:
-            serializer = RatingSerializer(data=data)
+        # Ensure the rating is provided in the request
+        if 'rating' not in request.data:
+            return Response({'message': 'Rating is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if serializer.is_valid():
-            serializer.save(user=user, movie=movie)
-            return Response({'message': 'Rating submitted successfully', 'data': serializer.data}, status=status.HTTP_201_CREATED if not existing_rating else status.HTTP_200_OK)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        rating_value = request.data['rating']
+        
+        # Get or create the Rating instance
+        rating_instance, created = Rating.objects.get_or_create(
+            user=user, 
+            movie=movie,
+            defaults={'rating': rating_value}  # Set default rating if creating new
+        )
+        
+        # If the rating instance was found and not created, update it
+        if not created:
+            rating_instance.rating = rating_value
+            rating_instance.save()
 
+        # Serialize the rating instance
+        serializer = RatingSerializer(rating_instance, context={'request': request})
+        return Response({'message': 'Rating submitted successfully', 'data': serializer.data}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
 
 ### FRIEND VIEWS ###
