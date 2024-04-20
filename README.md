@@ -200,8 +200,8 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Method: GET
 - Purpose: Retrieves the details of a movie given its id 
 - Request Format: Provide user credentials (access token). The movie id is provided in the url.
-- Response Format: Returns a response body with fields: 'id', 'title', 'poster_url', 'overview', 'runtime', 'adult', 'cast', 'release_date', 'genres', 'average_rating', 'rated'
-- Extra Notes: The 'rated' field will be 0 if the signed in user has not rated the movie yet. If the user has, the field will include the current user's rating for that movie (1-5). The genres will be a list of genre names. The cast field includes both actors and crew (directors, other staff), so frontend may need extra handling on the cast field to display these people in their appropriate places. The runtime is an integer in minutes. See models.py, views.py, and serializers.py for more info. 
+- Response Format: Returns a response body with fields: 'id', 'title', 'poster_url', 'overview', 'runtime', 'adult', 'release_date', 'genres', 'actors', 'directors', 'average_rating', 'rated'
+- Extra Notes: The 'rated' field will be 0 if the signed in user has not rated the movie yet. If the user has, the field will include the current user's rating for that movie (1-5). The genres, actors, and directors fields will each be a list of objects that each have a name field. The runtime is an integer in minutes. See models.py, views.py, and serializers.py for more info. 
 
 #### Get a Movie's Comments
 - Endpoint: `/api/movie/<int:pk>/comments/`

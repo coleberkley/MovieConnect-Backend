@@ -46,6 +46,7 @@ class CreateGenericUserView(APIView):
             set_access_token_cookie(response, str(refresh.access_token))
             return response
         else:
+            print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -180,6 +181,7 @@ class MovieSearchView(APIView):
 
         found_movies = Movie.objects.filter(title__icontains=search_query)
         serializer = DisplayMovieSerializer(found_movies, many=True)
+        print(f"Found movies: {serializer.data}")
         return Response(serializer.data)
 
 
@@ -282,6 +284,7 @@ class UserSearchView(APIView):
         # Find users whose username contains the search_query
         found_users = User.objects.filter(username__icontains=search_query)
         serializer = UserInfoSerializer(found_users, many=True)
+        print(f"Found users: {serializer.data}")
         return Response(serializer.data)
 
 
