@@ -52,6 +52,7 @@ class Movie(models.Model):
     release_date = models.DateField(null=True, blank=True)  
     actors = models.ManyToManyField(Actor, related_name='movies')
     directors = models.ManyToManyField(Director, related_name='movies')
+    avg_rating = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.title

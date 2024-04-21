@@ -56,26 +56,29 @@ class OtherUserProfileSerializer(serializers.ModelSerializer):
 
     def get_is_friend(self, obj):
         request_user = self.context['request'].user
-        return FriendRequest.objects.filter(
-            (Q(from_user=request_user, to_user=obj) | Q(from_user=obj, to_user=request_user)),
-            accepted=True
-        ).exists()
+        friend_request = FriendRequest.objects.filter(
+            Q(from_user=request_user, to_user=obj, accepted=True) |
+            Q(from_user=obj, to_user=request_user, accepted=True)
+        ).first()
+        return friend_request.id if friend_request else None
 
     def get_is_outgoing(self, obj):
         request_user = self.context['request'].user
-        return FriendRequest.objects.filter(
-            from_user=request_user,
-            to_user=obj,
+        friend_request = FriendRequest.objects.filter(
+            from_user=request_user, 
+            to_user=obj, 
             accepted=False
-        ).exists()
+        ).first()
+        return friend_request.id if friend_request else None
 
     def get_is_incoming(self, obj):
         request_user = self.context['request'].user
-        return FriendRequest.objects.filter(
-            from_user=obj,
-            to_user=request_user,
+        friend_request = FriendRequest.objects.filter(
+            from_user=obj, 
+            to_user=request_user, 
             accepted=False
-        ).exists()
+        ).first()
+        return friend_request.id if friend_request else None
 
 
 # Serializer for user sign up
@@ -177,22 +180,19 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     genres = GenreSerializer(many=True, read_only=True)
     actors = ActorSerializer(many=True, read_only=True)
     directors = DirectorSerializer(many=True, read_only=True)
-    average_rating = serializers.SerializerMethodField()
+    avg_rating = serializers.SerializerMethodField()
     rated = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = [
             'id', 'title', 'poster_url', 'overview', 'runtime', 'adult',
-            'release_date', 'genres', 'actors', 'directors', 'average_rating', 'rated'
+            'release_date', 'genres', 'actors', 'directors', 'avg_rating', 'rated'
         ]
 
-    def get_average_rating(self, obj):
-        ratings = Rating.objects.filter(movie=obj)
-        if ratings.exists():
-            average = ratings.aggregate(Avg('rating'))['rating__avg']
-            return round(average, 1)
-        return 0
+    def get_avg_rating(self, obj):
+        # Return avg_rating rounded to 1 decimal place, or None if it's null
+        return round(obj.avg_rating, 1) if obj.avg_rating is not None else None
 
     def get_rated(self, obj):
         user = self.context['request'].user
@@ -200,6 +200,7 @@ class MovieDetailSerializer(serializers.ModelSerializer):
             return 0
         rating = Rating.objects.filter(user=user, movie=obj).first()
         return rating.rating if rating else 0
+
 
 
 # Serializer for adding or updating a rating

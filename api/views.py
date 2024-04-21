@@ -12,6 +12,7 @@ from django.db.models import Q
 from rest_framework.exceptions import NotFound
 from django.contrib.auth import get_user_model
 from .model_xgboost import recommend_movies
+from django.db.models import Avg
 
 User = get_user_model()
 
@@ -269,6 +270,11 @@ class RateMovieView(APIView):
         if not created:
             rating_instance.rating = rating_value
             rating_instance.save()
+
+        # Recalculate the average rating for the movie
+        new_avg_rating = movie.movie_ratings.aggregate(Avg('rating'))['rating__avg']
+        movie.avg_rating = new_avg_rating
+        movie.save()
 
         # Serialize the rating instance
         serializer = RatingSerializer(rating_instance, context={'request': request})
