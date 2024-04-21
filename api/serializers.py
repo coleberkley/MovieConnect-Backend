@@ -47,16 +47,34 @@ class UserProfileSerializer(serializers.ModelSerializer):
 # Serializer for a different User Profile's fields
 class OtherUserProfileSerializer(serializers.ModelSerializer):
     is_friend = serializers.SerializerMethodField()
+    is_outgoing = serializers.SerializerMethodField()
+    is_incoming = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'bio', 'is_private', 'is_friend']
+        fields = ['id', 'username', 'bio', 'is_private', 'is_friend', 'is_outgoing', 'is_incoming']
 
     def get_is_friend(self, obj):
         request_user = self.context['request'].user
         return FriendRequest.objects.filter(
             (Q(from_user=request_user, to_user=obj) | Q(from_user=obj, to_user=request_user)),
             accepted=True
+        ).exists()
+
+    def get_is_outgoing(self, obj):
+        request_user = self.context['request'].user
+        return FriendRequest.objects.filter(
+            from_user=request_user,
+            to_user=obj,
+            accepted=False
+        ).exists()
+
+    def get_is_incoming(self, obj):
+        request_user = self.context['request'].user
+        return FriendRequest.objects.filter(
+            from_user=obj,
+            to_user=request_user,
+            accepted=False
         ).exists()
 
 

@@ -238,8 +238,8 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Method: GET
 - Purpose: Get another user's profile data
 - Request Format: Provide user credentials (access token). The desired user's id is provided in the url. Get this id from searching for a user or from a user list like a friends list. 
-- Response Format: Returns the following fields for that user: 'id', 'username', 'bio', 'is_private', 'is_friend'
-- Extra Notes: is_private is true if the user is private, false otherwise. is_friend is true if the user is friends with the signed in user, false otherwise. 
+- Response Format: Returns the following fields for that user: 'id', 'username', 'bio', 'is_private', 'is_friend', 'is_outgoing', 'is_incoming'
+- Extra Notes: is_private is true if the user is private, false otherwise. is_friend is true if the user is friends with the signed in user, false otherwise. is_outgoing is true if the signed in user has an outgoing request sent to the user. is_incoming is true if the signed in user has an incoming request pending from the user. 
 
 #### Other User Friends List
 - Endpoint: `/api/user/<int:user_id>/friends/`

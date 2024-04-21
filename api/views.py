@@ -213,6 +213,7 @@ class CommentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk, format=None):
+        print(f"Request data: {request.data}")
         user = request.user
         try:
             movie = Movie.objects.get(pk=pk)
@@ -299,7 +300,7 @@ class RetrieveOtherUserProfile(APIView):
     def get(self, request, user_id):
         try:
             user = User.objects.get(pk=user_id)
-            if request.user.id == user_id:  # Avoid using this view for the signed-in user's own profile
+            if request.user.id == user_id:  
                 return Response({'message': 'Use the retrieve_user_profile endpoint for own profile.'}, status=status.HTTP_400_BAD_REQUEST)
 
             context = {'request': request}
@@ -314,6 +315,7 @@ class SendFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, to_user_id):
+        print(f"Request data: {request.data}")
         from_user = request.user
         if from_user.id == to_user_id:
             return Response({'message': 'You cannot send a friend request to yourself.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -336,6 +338,7 @@ class RemoveFriendView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, friend_id):
+        print(f"Request data: {request.data}")
         user = request.user
         # Attempt to find an accepted friend request in either direction.
         friend_request = FriendRequest.objects.filter(
@@ -409,6 +412,7 @@ class UpdateFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, request_id):
+        print(f"Update Friend Request. Request data: {request.data}")
         try:
             friend_request = FriendRequest.objects.get(id=request_id, to_user=request.user)
             friend_request.accepted = True
@@ -418,6 +422,7 @@ class UpdateFriendRequestView(APIView):
             return Response({'message': 'Friend request not found.'}, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, request_id):
+        print(f"Delete Friend Request. Request data: {request.data}")
         try:
             friend_request = FriendRequest.objects.get(id=request_id, to_user=request.user)
             friend_request.delete()
@@ -431,6 +436,7 @@ class CancelFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def delete(self, request, request_id):
+        print(f"Request data: {request.data}")
         try:
             friend_request = FriendRequest.objects.get(id=request_id, from_user=request.user)
             friend_request.delete()
