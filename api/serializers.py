@@ -180,17 +180,17 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     genres = GenreSerializer(many=True, read_only=True)
     actors = ActorSerializer(many=True, read_only=True)
     directors = DirectorSerializer(many=True, read_only=True)
-    avg_rating = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
     rated = serializers.SerializerMethodField()
 
     class Meta:
         model = Movie
         fields = [
             'id', 'title', 'poster_url', 'overview', 'runtime', 'adult',
-            'release_date', 'genres', 'actors', 'directors', 'avg_rating', 'rated'
+            'release_date', 'genres', 'actors', 'directors', 'average_rating', 'rated'
         ]
 
-    def get_avg_rating(self, obj):
+    def get_average_rating(self, obj):
         # Return avg_rating rounded to 1 decimal place, or None if it's null
         return round(obj.avg_rating, 1) if obj.avg_rating is not None else None
 

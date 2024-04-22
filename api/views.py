@@ -125,7 +125,7 @@ class UpdateProfileView(APIView):
 
 ### LIST VIEWS ###
 
-# Retrieves the primary recommendation list for the user
+# Retrieves the movie recommendation list for the user
 class RetrieveMovies(APIView):
     permission_classes = [IsAuthenticated]
  
@@ -135,6 +135,32 @@ class RetrieveMovies(APIView):
         movies = Movie.objects.filter(title__in=recommended_titles)
         serializer = DisplayMovieSerializer(movies, many=True)
         return Response(serializer.data)
+
+
+# Retrieves the popular movies list for the user
+class MostPopularMoviesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    # Currently returns 10 movies
+    def get(self, request, format=None):
+        number_of_movies = 10  
+        popular_movies = Movie.objects.filter(avg_rating__isnull=False).order_by('-avg_rating')[:number_of_movies]
+        serializer = DisplayMovieSerializer(popular_movies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+# Retrieves the similar movies list for a movie
+class SimilarMoviesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk, format=None):
+        try:
+            movie = Movie.objects.get(pk=pk)
+            similar_movies = movie.similar_movies.all()
+            serializer = DisplayMovieSerializer(similar_movies, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Movie.DoesNotExist:
+            return Response({'message': 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 # Retrieves the already-rated movies list for the user
@@ -196,6 +222,7 @@ class RetrieveMovieDetail(APIView):
         movie = Movie.objects.filter(pk=pk).first()
         if movie is not None:
             serializer = MovieDetailSerializer(movie, context={'request': request})
+            print(f"Movie details: {serializer.data}")
             return Response(serializer.data)
         else:
             return Response({'message': 'Movie not found'}, status=status.HTTP_404_NOT_FOUND)

@@ -53,6 +53,8 @@ class Movie(models.Model):
     actors = models.ManyToManyField(Actor, related_name='movies')
     directors = models.ManyToManyField(Director, related_name='movies')
     avg_rating = models.FloatField(null=True, blank=True)
+    similar_movies = models.ManyToManyField('self', symmetrical=False, related_name='related_to+', blank=True)
+
 
     def __str__(self):
         return self.title

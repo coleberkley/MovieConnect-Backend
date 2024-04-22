@@ -25,6 +25,8 @@ from .views import (
     RetrieveOtherUserProfile,
     ListUserFriendsView,
     DeleteUserView,
+    MostPopularMoviesView,
+    SimilarMoviesView,
     )
 
 urlpatterns = [
@@ -52,6 +54,7 @@ urlpatterns = [
 
     # Movie Lists
     path('user/movies/', RetrieveMovies.as_view(), name='retrieve_movies'), # Get primary movie recommendation list for user
+    path('movies/popular/', MostPopularMoviesView.as_view(), name='most_popular_movies'), # Get most popular movies
 
     # Searching
     path('movie/search/', MovieSearchView.as_view(), name='movie_search'), # Search for movies by title
@@ -60,6 +63,7 @@ urlpatterns = [
     # Movie Page
     path('movie/<int:pk>/', RetrieveMovieDetail.as_view(), name='retrieve_movie'), # Get movie details
     path('movie/<int:pk>/comments/', MovieCommentsView.as_view(), name='movie_comments'), # Get Movie comments
+    path('movie/<int:pk>/similar/', SimilarMoviesView.as_view(), name='similar_movies'),  # Get similar movies
     path('movie/<int:pk>/rate/', RateMovieView.as_view(), name='rate_movie'), # Add/Update a movie rating
     path('movie/<int:pk>/comment/', CommentView.as_view(), name='movie_comment'), # Add/Delete comment on a movie
 

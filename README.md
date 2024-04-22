@@ -151,7 +151,7 @@ Remember to prepend `http://localhost:80` before each endpoint.
 
 ### Movie Lists 
 
-#### Get Primary Recommendation List 
+#### Get Recommendation List 
 - Endpoint: `/api/user/movies/`
 - Method: GET
 - Expects: userCredentials
@@ -159,17 +159,16 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Model Type: Currently set to our simple SVD/cosine similarity model. In the middle of switching to more accurate SVD/XGBoost model. Both are collaborative models based on user ratings. 
 - Request Format: Provide user credentials (access token)
 - Response Format: Returns a list of recommended movies for that user. Each movie in the list will have fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
-- Extra Notes: Model will only be called if the user has rated a certain number of movies. Else, we return a list of randomly picked movies from the database.
+- Extra Notes: Model will only be called if the user has rated a certain number of movies. Else, we return a list of randomly picked movies from the database. 
 
-
-#### Get Secondary Recommendation List
-- Endpoint: None yet
+#### Get Popular Movies List
+- Endpoint: `/api/movies/popular/`
 - Method: GET
-- Purpose: Returns a recommendation list of movies for the signed in user
-- Model Type: Nothing implemented yet. ML team has a model for content-based filtering, or recommending movies based on similar movies, so that would be integrated on a separate endpoint for the separate list. 
-- Behavior: undecided
+- Expects: userCredentials
+- Purpose: Returns the X most popular movies in our database based on average rating. X currently set to 10. 
 - Request Format: Provide user credentials (access token)
-- Response Format: undecided
+- Response Format: Returns a list of popular movies. Each movie in the list will have fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
+- Extra Notes: This list will return much faster than the recommendation list.
 
 
 
@@ -210,6 +209,14 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Request Format: Provide user credentials (access token). The movie id is provided in the url. 
 - Response Format: Returns a list of all comments for that movie. Each comment contains the fields: 'id', 'body', 'timestamp', 'username'
 - Extra Notes: Timestamp will likely have to be converted to something readable if it is used.
+
+#### Get a Movie's Similar Movies List
+- Endpoint: `/api/movie/<int:pk>/similar/`
+- Method: GET
+- Purpose: Retrieves the ten most similar movies for that movie given its movie id
+- Request Format: Provide user credentials (access token). The movie id is provided in the url. 
+- Response Format: Returns a list of movies where each movie in the list has fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
+- Extra Notes: Pretty much the same response as other movie lists.
 
 #### Rate a Movie
 - Endpoint: `/api/movie/<int:pk>/rate/`

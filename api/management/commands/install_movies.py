@@ -12,8 +12,8 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument('movies_file', type=str)
-        parser.add_argument('links_file', type=str)
-        parser.add_argument('ratings_file', type=str)
+        # parser.add_argument('links_file', type=str)
+        # parser.add_argument('ratings_file', type=str)
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS('Starting import process...'))
