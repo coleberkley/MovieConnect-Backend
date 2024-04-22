@@ -182,12 +182,14 @@ class MovieDetailSerializer(serializers.ModelSerializer):
     directors = DirectorSerializer(many=True, read_only=True)
     average_rating = serializers.SerializerMethodField()
     rated = serializers.SerializerMethodField()
+    on_watchlist = serializers.SerializerMethodField() 
+
 
     class Meta:
         model = Movie
         fields = [
             'id', 'title', 'poster_url', 'overview', 'runtime', 'adult',
-            'release_date', 'genres', 'actors', 'directors', 'average_rating', 'rated'
+            'release_date', 'genres', 'actors', 'directors', 'average_rating', 'rated', 'on_watchlist'
         ]
 
     def get_average_rating(self, obj):
@@ -200,6 +202,10 @@ class MovieDetailSerializer(serializers.ModelSerializer):
             return 0
         rating = Rating.objects.filter(user=user, movie=obj).first()
         return rating.rating if rating else 0
+    
+    def get_on_watchlist(self, obj):
+        user = self.context['request'].user
+        return obj.watchlisted_by.filter(id=user.id).exists()
 
 
 # Serializer for another user's rated movie list

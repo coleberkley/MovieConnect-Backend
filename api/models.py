@@ -9,7 +9,11 @@ class GenericUser(AbstractUser):
     birth_date = models.DateField(null=True, blank=True) # Expects ISO 8601 format: YYYY-MM-DD
     is_private = models.BooleanField(default=False) # public/private users
     email = models.EmailField(unique=True) # requires unique email for sign-ups
-    
+    watchlist = models.ManyToManyField('Movie', related_name='watchlisted_by', blank=True) # Movies user wants to watch
+
+    def __str__(self):
+        return self.username
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=255, unique=True)

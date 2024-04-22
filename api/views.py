@@ -212,6 +212,16 @@ class MovieSearchView(APIView):
         return Response(serializer.data)
 
 
+# Returns a list of movies in the user's watchlist
+class ViewWatchlist(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        movies = request.user.watchlist.all()
+        serializer = DisplayMovieSerializer(movies, many=True)
+        return Response(serializer.data)
+
+
 
 ### MOVIE VIEWS ###
 
@@ -305,6 +315,29 @@ class RateMovieView(APIView):
         # Serialize the rating instance
         serializer = RatingSerializer(rating_instance, context={'request': request})
         return Response({'message': 'Rating submitted successfully', 'data': serializer.data}, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+
+# Add or remove a movie from the user's watchlist
+class ManageWatchlistView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            movie = Movie.objects.get(pk=pk)
+            request.user.watchlist.add(movie)
+            return Response({'message': 'Movie added to watchlist.'}, status=status.HTTP_201_CREATED)
+        except Movie.DoesNotExist:
+            return Response({'message': 'Movie not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, pk):
+        try:
+            movie = Movie.objects.get(pk=pk)
+            request.user.watchlist.remove(movie)
+            return Response({'message': 'Movie removed from watchlist.'}, status=status.HTTP_204_NO_CONTENT)
+        except Movie.DoesNotExist:
+            return Response({'message': 'Movie not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
 
 
 ### FRIEND VIEWS ###

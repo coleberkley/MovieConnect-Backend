@@ -170,6 +170,15 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Response Format: Returns a list of popular movies. Each movie in the list will have fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
 - Extra Notes: This list will return much faster than the recommendation list.
 
+#### Get User's Watch List
+- Endpoint: `/api/movies/watch/`
+- Method: GET
+- Expects: userCredentials
+- Purpose: Returns the list of movies the user has added to their watch list. 
+- Request Format: Provide user credentials (access token)
+- Response Format: Returns a list of movies. Each movie in the list will have fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
+- Extra Notes: This list can vary in length.
+
 
 
 ### Searching
@@ -235,6 +244,16 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Request Format (DELETE): Provide user credentials (acess token). In the request body, provide a 'comment_id' field. Movie is provided in the url.
 - Response Format (DELETE): Returns a 400 status if no comment_id, 404 if comment not found, 204 if comment deleted successfully.
 - Extra Notes: Body field will obviously hold the comment body. Timestamp is generated in the backend. Comment_id will hold the id of the comment desired to be deleted.
+
+#### Add or Remove a Movie from Watch List
+- Endpoint: `/api/movie/<int:pk>/watch/`
+- Method: POST, DELETE
+- Purpose: Add or remove a movie from the signed in user's watch list.
+- Request Format (ADD): Provide user credentials (access token). The movie id to add to the list is provided in the url.
+- Response Format (ADD): Returns a 404 status if error, 201 if movie added successfully.
+- Request Format (DELETE): Provide user credentials (access token). The movie id to remove from the list is provided in the url.
+- Response Format (DELETE): Returns a 404 status if error, 204 if movie removed successfully.
+- Extra Notes: None for now.
 
 
 

@@ -27,6 +27,8 @@ from .views import (
     DeleteUserView,
     MostPopularMoviesView,
     SimilarMoviesView,
+    ManageWatchlistView, 
+    ViewWatchlist,
     )
 
 urlpatterns = [
@@ -44,6 +46,7 @@ urlpatterns = [
     # User Profile Page
     path('user/profile/', RetrieveUserProfile.as_view(), name='retrieve_user_profile'), # Get user data
     path('user/movies/rated/', ListRatedMoviesView.as_view(), name='list_rated_movies'), # Get rated movies list for signed-in user
+
     path('user/update/', UpdateProfileView.as_view(), name='update_profile'), # Update user profile
     path('friends/', ListFriendsView.as_view(), name='list_friends'), # Get friends list
     path('user/remove-friend/<int:friend_id>/', RemoveFriendView.as_view(), name='remove-friend'), # Remove friend
@@ -55,6 +58,7 @@ urlpatterns = [
     # Movie Lists
     path('user/movies/', RetrieveMovies.as_view(), name='retrieve_movies'), # Get primary movie recommendation list for user
     path('movies/popular/', MostPopularMoviesView.as_view(), name='most_popular_movies'), # Get most popular movies
+    path('movies/watch/', ViewWatchlist.as_view(), name='view_watchlist'), # Get watchlist for signed-in user
 
     # Searching
     path('movie/search/', MovieSearchView.as_view(), name='movie_search'), # Search for movies by title
@@ -66,6 +70,7 @@ urlpatterns = [
     path('movie/<int:pk>/similar/', SimilarMoviesView.as_view(), name='similar_movies'),  # Get similar movies
     path('movie/<int:pk>/rate/', RateMovieView.as_view(), name='rate_movie'), # Add/Update a movie rating
     path('movie/<int:pk>/comment/', CommentView.as_view(), name='movie_comment'), # Add/Delete comment on a movie
+    path('movie/<int:pk>/watch/', ManageWatchlistView.as_view(), name='manage_watchlist'), # Add/Remove movie from watchlist
 
     # Other User Page
     path('user/<int:user_id>/profile/', RetrieveOtherUserProfile.as_view(), name='retrieve_other_user_profile'), # Get another user's profile
