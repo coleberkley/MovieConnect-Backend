@@ -86,8 +86,8 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Method: GET
 - Purpose: Retrieves all movies the signed in user has rated.
 - Request Format: Provide user credentials (access token)
-- Response Format: Returns a a list of movies in the response body. Each movie in the list has fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
-- Extra Notes: If the list is empty, the user has rated no movies.
+- Response Format: Returns a a list of movies in the response body. Each movie in the list has fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult', 'user_rating'
+- Extra Notes: If the list is empty, the user has rated no movies. user_rating contains the signed-in user's rating for that movie.
 
 #### Update Profile
 - Endpoint: `/api/user/update/`
@@ -261,8 +261,8 @@ Remember to prepend `http://localhost:80` before each endpoint.
 - Method: GET
 - Purpose: Get another user's rated movies list. 
 - Request Format: Provide user credentials (access token). The desired user's id is provided in the url.
-- Response Format: Returns a 200 status when successful with a list of movies. Each movie in the list has fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult'
-- Extra Notes: If the response status is 200 but the list is empty, then the user has not rated any movies.
+- Response Format: Returns a 200 status when successful with a list of movies. Each movie in the list has fields: 'id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult', 'user_rating'
+- Extra Notes: If the response status is 200 but the list is empty, then the user has not rated any movies. user_rating contains that user's rating for that movie.
 
 #### Send a Friend Request
 - Endpoint: `/api/send-friend-request/<int:to_user_id>/`

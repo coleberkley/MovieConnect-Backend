@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.http import JsonResponse
 from django.conf import settings
-from .serializers import UserSignUpSerializer, UserProfileSerializer, DisplayMovieSerializer, MovieDetailSerializer, CommentSerializer, RatingSerializer, FriendRequestSerializer, UserNameSerializer, UserInfoSerializer, UpdateProfileSerializer, OtherUserProfileSerializer
+from .serializers import UserSignUpSerializer, UserProfileSerializer, DisplayMovieSerializer, MovieDetailSerializer, CommentSerializer, RatingSerializer, FriendRequestSerializer, UserNameSerializer, UserInfoSerializer, UpdateProfileSerializer, OtherUserProfileSerializer, UserRatedMoviesSerializer
 from rest_framework.permissions import IsAuthenticated
 from .models import Movie, Rating, Comment, FriendRequest
 from django.db.models import Q
@@ -175,7 +175,7 @@ class ListRatedMoviesView(APIView):
         rated_movies = Movie.objects.filter(id__in=user_ratings)
         
         # Serialize the movies
-        serializer = DisplayMovieSerializer(rated_movies, many=True)
+        serializer = UserRatedMoviesSerializer(rated_movies, many=True, context={'user': request.user})
         return Response(serializer.data)
 
 
@@ -188,13 +188,12 @@ class ListUserRatedMoviesView(APIView):
             target_user = User.objects.get(pk=user_id)
         except User.DoesNotExist:
             return Response({'message': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-        
-        # We remove the check for whether the target user is a friend or not
-        user_ratings = Rating.objects.filter(user=target_user).values_list('movie', flat=True)
 
-        # Retrieve the corresponding movies
+        user_ratings = Rating.objects.filter(user=target_user).values_list('movie', flat=True)
         rated_movies = Movie.objects.filter(id__in=user_ratings)
-        serializer = DisplayMovieSerializer(rated_movies, many=True)
+        
+        # Pass the target user to the serializer's context
+        serializer = UserRatedMoviesSerializer(rated_movies, many=True, context={'user': target_user})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 

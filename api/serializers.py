@@ -202,6 +202,20 @@ class MovieDetailSerializer(serializers.ModelSerializer):
         return rating.rating if rating else 0
 
 
+# Serializer for another user's rated movie list
+class UserRatedMoviesSerializer(serializers.ModelSerializer):
+    user_rating = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Movie
+        fields = ['id', 'title', 'poster_url', 'overview', 'release_date', 'runtime', 'adult', 'user_rating']
+
+    def get_user_rating(self, obj):
+        user = self.context.get('user')
+        rating = Rating.objects.filter(user=user, movie=obj).first()
+        return rating.rating if rating else None
+
+
 
 # Serializer for adding or updating a rating
 class RatingSerializer(serializers.ModelSerializer):
