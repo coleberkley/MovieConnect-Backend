@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
-# from api.recommender import recommend_movies
-from api.model_xgboost import recommend_movies
+from api.algorithms.xgboost_simple_opt import recommend_movies
 
 class Command(BaseCommand):
     help = 'Generate movie recommendations for a specified user.'

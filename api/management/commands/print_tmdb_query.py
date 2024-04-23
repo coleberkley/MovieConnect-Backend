@@ -32,7 +32,7 @@ import os
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        movie_id = 525662
+        movie_id = 187017
         api_key = os.getenv('TMDB_KEY')
         url = f'https://api.themoviedb.org/3/movie/{movie_id}?api_key={api_key}'
 

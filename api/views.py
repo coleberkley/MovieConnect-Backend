@@ -11,7 +11,7 @@ from .models import Movie, Rating, Comment, FriendRequest
 from django.db.models import Q
 from rest_framework.exceptions import NotFound
 from django.contrib.auth import get_user_model
-from .model_xgboost import recommend_movies
+from .algorithms.xgboost_w2v_opt import recommend_movies
 from django.db.models import Avg
 
 User = get_user_model()
@@ -143,7 +143,7 @@ class MostPopularMoviesView(APIView):
 
     # Currently returns 10 movies
     def get(self, request, format=None):
-        number_of_movies = 10  
+        number_of_movies = 20  
         popular_movies = Movie.objects.filter(avg_rating__isnull=False).order_by('-avg_rating')[:number_of_movies]
         serializer = DisplayMovieSerializer(popular_movies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
