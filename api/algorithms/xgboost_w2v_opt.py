@@ -12,7 +12,7 @@ def compute_vector_mean(model, words):
     else:
         return np.zeros(50)
 
-def recommend_movies(username, top_n=20):
+def recommend_movies(username, top_n=100):
     # Load the model, vectorizer, and Word2Vec models
     model = XGBClassifier()
     model.load_model("api/algorithms/mc_rec_w2v.json")
@@ -73,10 +73,12 @@ def recommend_movies(username, top_n=20):
     top_movies = movie_df.nlargest(top_n, 'likelihood')['movie_id']
 
     # Exclude movies that the user has already rated
-    recommended_movies = top_movies[~top_movies.isin(rated_movie_ids)]
+    filtered_movies = top_movies[~top_movies.isin(rated_movie_ids)]
+    final_selection = 20
+    final_recommendations = filtered_movies.sample(n=final_selection) if len(filtered_movies) > final_selection else filtered_movies
     
     # Get the movie titles based on predicted movie IDs
-    recommended_titles = Movie.objects.filter(movie_id__in=recommended_movies).values_list('title', flat=True)
+    recommended_titles = Movie.objects.filter(movie_id__in=final_recommendations).values_list('title', flat=True)
 
     return list(recommended_titles)
 

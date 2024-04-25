@@ -131,7 +131,7 @@ class RetrieveMovies(APIView):
  
     def get(self, request):
         username = request.user.username
-        recommended_titles = recommend_movies(username, top_n=10)
+        recommended_titles = recommend_movies(username, top_n=100)
         movies = Movie.objects.filter(title__in=recommended_titles)
         serializer = DisplayMovieSerializer(movies, many=True)
         return Response(serializer.data)
@@ -143,7 +143,7 @@ class MostPopularMoviesView(APIView):
 
     # Currently returns 10 movies
     def get(self, request, format=None):
-        number_of_movies = 20  
+        number_of_movies = 30
         popular_movies = Movie.objects.filter(avg_rating__isnull=False).order_by('-avg_rating')[:number_of_movies]
         serializer = DisplayMovieSerializer(popular_movies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -268,6 +268,7 @@ class CommentView(APIView):
         user = request.user
         comment_id = request.query_params.get('comment_id')
         if not comment_id:
+            print("Comment ID is required")
             return Response({'message': 'Comment ID is required'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
